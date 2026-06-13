@@ -46,6 +46,7 @@ androidx-biometric = { module = "androidx.biometric:biometric", version = "1.2.0
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 google-generativeai = { module = "com.google.ai.client.generativeai:generativeai", version = "0.7.0" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version = "4.12.0" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.6.3" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }

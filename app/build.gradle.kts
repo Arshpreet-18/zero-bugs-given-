@@ -104,6 +104,7 @@ dependencies {
   // Google Generative AI
   implementation(libs.google.generativeai)
   implementation(libs.okhttp)
+  implementation(libs.kotlinx.serialization.json)
 
   // Graphics Path 16KB alignment compliance
   implementation(libs.androidx.graphics.path)

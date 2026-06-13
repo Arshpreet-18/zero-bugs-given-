@@ -25,39 +25,49 @@ class TransactionSmsReceiver : BroadcastReceiver() {
             val messages = Telephony.Sms.Intents.getMessagesFromIntent(intent)
             for (message in messages) {
                 val body = message.messageBody
-                parseAndProcessSms(context, body)
+                val sender = message.originatingAddress ?: "Unknown"
+                val timestamp = message.timestampMillis
+                parseAndProcessSms(context, body, sender, timestamp)
             }
         }
     }
 
-    fun parseAndProcessSms(context: Context, body: String) {
-        val result = SmsParser.parse(body)
-        if (result != null) {
-            val parsed = result.transaction
-            val balance = result.balance
+    fun parseAndProcessSms(
+        context: Context, 
+        body: String, 
+        senderId: String = "Unknown", 
+        timestamp: Long = System.currentTimeMillis()
+    ) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val securityHelper = com.example.antigravityfinance.service.security.SecurityHelper(context.applicationContext)
+            val trustedSenders = securityHelper.getTrustedSenders()
+            val result = com.example.antigravityfinance.service.sms.detection.SmsDetectionModule.detect(body, senderId, timestamp, trustedSenders)
+
             val db = FinanceDatabase.getDatabase(context)
             val repo = TransactionRepository(db.transactionDao(), db.recurringMerchantDao(), db.budgetDao())
 
-            if (balance != null) {
-                val securityHelper = com.example.antigravityfinance.service.security.SecurityHelper(context.applicationContext)
-                securityHelper.saveSyncedBalance(balance)
+            if (result.availableBalance != null) {
+                securityHelper.saveSyncedBalance(result.availableBalance)
             }
 
-            CoroutineScope(Dispatchers.IO).launch {
-                val duplicate = repo.checkForDuplicate(parsed.amount, parsed.merchant, parsed.date)
-                val isAutoConfirm = repo.isMerchantAutoConfirm(parsed.merchant)
-                val finalStatus = TransactionStatus.CONFIRMED
-
+            if (result.autoAdd && result.amount != null) {
+                val duplicate = repo.checkForDuplicate(result.amount, result.merchantOrSender, result.smsTimestamp)
                 if (duplicate == null) {
-                    repo.insertTransaction(parsed.copy(status = finalStatus))
+                    val category = AutoCategorizer.categorize(result.merchantOrSender)
+                    val tx = Transaction(
+                        amount = result.amount,
+                        merchant = result.merchantOrSender,
+                        date = result.smsTimestamp,
+                        category = category,
+                        notes = result.rawSms,
+                        account = result.bankName.ifBlank { "Bank SMS" },
+                        status = TransactionStatus.CONFIRMED,
+                        isIncome = result.transactionType == com.example.antigravityfinance.service.sms.detection.TransactionType.CREDIT,
+                        detectedFromSms = true
+                    )
+                    repo.insertTransaction(tx)
                 } else {
                     Log.d("SMSReceiver", "Duplicate transaction detected: #${duplicate.id}")
-                    repo.insertTransaction(
-                        parsed.copy(
-                            status = TransactionStatus.CONFIRMED,
-                            notes = "SMS matches Transaction #${duplicate.id} (${duplicate.merchant})"
-                        )
-                    )
                 }
             }
         }

@@ -872,6 +872,22 @@ fun TransactionsScreen(
         }
     }
 
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = androidx.activity.result.contract.ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) {
+            try {
+                val inputStream = context.contentResolver.openInputStream(uri)
+                val bitmap = android.graphics.BitmapFactory.decodeStream(inputStream)
+                if (bitmap != null) {
+                    viewModel.handleRealOcrTrigger(bitmap)
+                }
+            } catch (e: Exception) {
+                android.widget.Toast.makeText(context, "Failed to load image: ${e.localizedMessage}", android.widget.Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     val filteredTransactions = remember(transactions, lastWalletClearTimestamp, searchQuery, selectedStatusFilter, sortBy, sortAscending) {
         var list = transactions.filter { it.date > lastWalletClearTimestamp }
 
@@ -908,12 +924,36 @@ fun TransactionsScreen(
         list
     }
 
-    Box(modifier = modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
+    var walletActiveTab by remember { mutableStateOf(0) }
+
+    Column(modifier = modifier.fillMaxSize()) {
+        TabRow(
+            selectedTabIndex = walletActiveTab,
+            containerColor = Color.Transparent,
+            contentColor = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
         ) {
+            Tab(
+                selected = walletActiveTab == 0,
+                onClick = { walletActiveTab = 0 },
+                text = { Text("History", fontWeight = FontWeight.Bold) }
+            )
+            Tab(
+                selected = walletActiveTab == 1,
+                onClick = { walletActiveTab = 1 },
+                text = { Text("SMS Review", fontWeight = FontWeight.Bold) }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        if (walletActiveTab == 0) {
+            Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp)
+                ) {
             if (smsSyncedBalance != null) {
                 Card(
                     shape = RoundedCornerShape(16.dp),
@@ -1224,8 +1264,12 @@ fun TransactionsScreen(
                     contentDescription = "Menu"
                 )
             }
+            }
         }
+    } else {
+        SmsReviewScreen(viewModel = viewModel, modifier = Modifier.weight(1f))
     }
+}
 
     if (showScanChoiceDialog) {
         Dialog(onDismissRequest = { showScanChoiceDialog = false }) {
@@ -1259,6 +1303,18 @@ fun TransactionsScreen(
                         Icon(Icons.Default.PhotoCamera, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Camera Scan".translate(language))
+                    }
+                    Button(
+                        onClick = {
+                            showScanChoiceDialog = false
+                            galleryLauncher.launch("image/*")
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(Icons.Default.PhotoLibrary, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Gallery Scan".translate(language))
                     }
                     Button(
                         onClick = {
@@ -1851,6 +1907,38 @@ fun AssistantScreen(
         }
 
         Spacer(modifier = Modifier.height(8.dp))
+
+        val suggestionQueries = listOf(
+            "How much did I spend on food?",
+            "How much is left in my budget?",
+            "Show my biggest debits",
+            "Give me saving insights",
+            "What is my investment growth?"
+        )
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp)
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            suggestionQueries.forEach { query ->
+                SuggestionChip(
+                    onClick = {
+                        viewModel.sendMessageToAssistant(query)
+                    },
+                    label = { Text(query, fontSize = 12.sp) },
+                    shape = RoundedCornerShape(16.dp),
+                    colors = SuggestionChipDefaults.suggestionChipColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    )
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(4.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -2966,9 +3054,7 @@ fun SettingsScreen(
         Text("AI Configuration".translate(language), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
         
         var tempGeminiKey by remember(geminiApiKey) { mutableStateOf(geminiApiKey) }
-        var tempSarvamKey by remember(sarvamKey) { mutableStateOf(sarvamKey) }
         var isGeminiKeyVisible by remember { mutableStateOf(false) }
-        var isSarvamKeyVisible by remember { mutableStateOf(false) }
 
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -2991,33 +3077,15 @@ fun SettingsScreen(
                 shape = RoundedCornerShape(12.dp)
             )
 
-            OutlinedTextField(
-                value = tempSarvamKey,
-                onValueChange = { tempSarvamKey = it },
-                label = { Text("Sarvam AI Subscription Key".translate(language)) },
-                visualTransformation = if (isSarvamKeyVisible) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
-                trailingIcon = {
-                    IconButton(onClick = { isSarvamKeyVisible = !isSarvamKeyVisible }) {
-                        Icon(
-                            imageVector = if (isSarvamKeyVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                            contentDescription = "Toggle Visibility"
-                        )
-                    }
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
-            )
-
             Button(
                 onClick = {
                     viewModel.updateGeminiApiKey(tempGeminiKey)
-                    viewModel.updateSarvamKey(tempSarvamKey)
-                    android.widget.Toast.makeText(context, "API Keys updated successfully!".translate(language), android.widget.Toast.LENGTH_SHORT).show()
+                    android.widget.Toast.makeText(context, "Gemini API Key updated successfully!".translate(language), android.widget.Toast.LENGTH_SHORT).show()
                 },
                 modifier = Modifier.align(Alignment.End),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Save Keys".translate(language))
+                Text("Save Key".translate(language))
             }
         }
 

@@ -17,8 +17,9 @@ object AiAssistantService {
         apiKey: String?,
         currencySymbol: String = "₹"
     ): String {
-        if (!apiKey.isNullOrBlank()) {
-            return askGemini(query, transactions, budgets, goals, investments, apiKey)
+        val cleanKey = apiKey?.trim() ?: ""
+        if (cleanKey.isNotBlank()) {
+            return askGemini(query, transactions, budgets, goals, investments, cleanKey, currencySymbol)
         }
         return askLocalNlp(query, transactions, budgets, goals, investments, currencySymbol)
     }
@@ -29,7 +30,8 @@ object AiAssistantService {
         budgets: List<Budget>,
         goals: List<SavingsGoal>,
         investments: List<Investment>,
-        apiKey: String
+        apiKey: String,
+        currencySymbol: String
     ): String {
         return try {
             val model = GenerativeModel(
@@ -84,7 +86,8 @@ object AiAssistantService {
             )
             response.text ?: "I am sorry, I couldn't formulate a response."
         } catch (e: Exception) {
-            "Error connecting to Gemini: ${e.localizedMessage}. Falling back to local assistant."
+            android.util.Log.e("AiAssistantService", "Gemini chat connection failed", e)
+            askLocalNlp(query, transactions, budgets, goals, investments, currencySymbol)
         }
     }
 

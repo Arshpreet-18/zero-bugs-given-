@@ -8,6 +8,8 @@ import com.example.antigravityfinance.data.model.TransactionStatus
 import com.example.antigravityfinance.data.repository.TransactionRepository
 import kotlinx.coroutines.flow.first
 
+import com.example.antigravityfinance.service.sms.detection.*
+
 object SmsInboxScanner {
     
     data class SyncSmsResult(
@@ -16,7 +18,7 @@ object SmsInboxScanner {
         val maxTimestamp: Long
     )
 
-    fun reconcileInbox(
+    suspend fun reconcileInbox(
         context: Context, 
         repository: TransactionRepository
     ): SyncSmsResult {
@@ -29,6 +31,9 @@ object SmsInboxScanner {
             return SyncSmsResult(0, null, 0L)
         }
 
+        val securityHelper = com.example.antigravityfinance.service.security.SecurityHelper(context.applicationContext)
+        val trustedSenders = securityHelper.getTrustedSenders()
+
         var addedCount = 0
         var latestBalance: Double? = null
         var latestBalanceTimestamp: Long = 0
@@ -40,7 +45,6 @@ object SmsInboxScanner {
             val inboxUri = Uri.parse("content://sms/inbox")
             val projection = arrayOf("_id", "address", "body", "date")
             
-            // Query all historical SMS messages to build the source of truth
             val cursor = context.contentResolver.query(
                 inboxUri, 
                 projection, 
@@ -59,12 +63,19 @@ object SmsInboxScanner {
                     val date = c.getLong(dateIndex)
                     val address = c.getString(addressIndex) ?: ""
                     
-                    val parsedResult = SmsParser.parse(body)
-                    if (parsedResult != null) {
-                        val transaction = parsedResult.transaction.copy(
+                    val result = SmsDetectionModule.detect(body, address, date, trustedSenders)
+                    if (result.autoAdd && result.amount != null) {
+                        val category = AutoCategorizer.categorize(result.merchantOrSender)
+                        val transaction = Transaction(
+                            amount = result.amount,
+                            merchant = result.merchantOrSender,
                             date = date,
-                            notes = "Synced from SMS Inbox (${address})",
-                            status = TransactionStatus.CONFIRMED
+                            category = category,
+                            notes = result.rawSms,
+                            account = result.bankName.ifBlank { "Bank SMS" },
+                            status = TransactionStatus.CONFIRMED,
+                            isIncome = result.transactionType == TransactionType.CREDIT,
+                            detectedFromSms = true
                         )
                         parsedSmsList.add(transaction)
                         
@@ -72,7 +83,7 @@ object SmsInboxScanner {
                             maxTimestamp = date
                         }
                         
-                        val balance = parsedResult.balance
+                        val balance = result.availableBalance
                         if (balance != null && date > latestBalanceTimestamp) {
                             latestBalance = balance
                             latestBalanceTimestamp = date
@@ -84,7 +95,6 @@ object SmsInboxScanner {
             Log.e("SmsInboxScanner", "Error scanning SMS inbox for reconciliation", e)
         }
         
-        // Fetch existing database transactions
         val dbTransactions = kotlinx.coroutines.runBlocking {
             repository.allTransactions.first()
         }
@@ -95,26 +105,25 @@ object SmsInboxScanner {
                 dbTx.amount == smsTx.amount &&
                 dbTx.isIncome == smsTx.isIncome &&
                 dbTx.merchant.equals(smsTx.merchant, ignoreCase = true) &&
-                Math.abs(dbTx.date - smsTx.date) < 120000 // within 2 minutes
+                Math.abs(dbTx.date - smsTx.date) < 120000
             }
             if (!exists) {
                 kotlinx.coroutines.runBlocking {
-                    val isAutoConfirm = repository.isMerchantAutoConfirm(smsTx.merchant)
-                    val finalStatus = TransactionStatus.CONFIRMED
-                    repository.insertTransaction(smsTx.copy(status = finalStatus))
+                    repository.insertTransaction(smsTx)
                 }
                 addedCount++
             }
         }
         
-        // 2. Delete only SMS-derived transactions that are no longer found in SMS.
-        // Manual and OCR transactions should remain in the history.
+        
+        
+        // 3. Delete only SMS-derived transactions that are no longer found in SMS.
         for (dbTx in dbTransactions.filter { it.detectedFromSms }) {
             val foundInSms = parsedSmsList.any { smsTx ->
                 smsTx.amount == dbTx.amount &&
                 smsTx.isIncome == dbTx.isIncome &&
                 smsTx.merchant.equals(dbTx.merchant, ignoreCase = true) &&
-                Math.abs(smsTx.date - dbTx.date) < 120000 // within 2 minutes
+                Math.abs(smsTx.date - dbTx.date) < 120000
             }
             if (!foundInSms) {
                 Log.d("SmsInboxScanner", "Deleting unverified transaction: ${dbTx.merchant} - ${dbTx.amount}")

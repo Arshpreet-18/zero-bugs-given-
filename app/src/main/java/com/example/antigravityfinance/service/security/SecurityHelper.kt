@@ -7,6 +7,8 @@ import android.util.Base64
 import com.example.antigravityfinance.data.model.CurrencyType
 import com.example.antigravityfinance.data.model.LanguageType
 import com.example.antigravityfinance.data.model.ThemeType
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
 import java.security.KeyStore
 import java.security.SecureRandom
 import javax.crypto.Cipher
@@ -188,7 +190,8 @@ class SecurityHelper(private val context: Context) {
 
     fun getGeminiApiKey(): String {
         val enc = sharedPrefs.getString("gemini_api_key", "") ?: ""
-        return decrypt(enc)
+        val dec = decrypt(enc)
+        return if (dec.isNotBlank()) dec else ""
     }
 
     fun saveElevenLabsKey(key: String) {
@@ -296,5 +299,62 @@ class SecurityHelper(private val context: Context) {
     }
     fun getLastWalletClearTimestamp(): Long {
         return sharedPrefs.getLong("last_wallet_clear_timestamp", 0L)
+    }
+
+    // Trusted SMS Senders
+    fun saveTrustedSender(senderId: String) {
+        val current = getTrustedSenders().toMutableSet()
+        current.add(senderId.uppercase())
+        sharedPrefs.edit().putStringSet("trusted_sms_senders", current).apply()
+    }
+
+    fun removeTrustedSender(senderId: String) {
+        val current = getTrustedSenders().toMutableSet()
+        current.remove(senderId.uppercase())
+        sharedPrefs.edit().putStringSet("trusted_sms_senders", current).apply()
+    }
+
+    fun isTrustedSender(senderId: String): Boolean {
+        return getTrustedSenders().contains(senderId.uppercase())
+    }
+
+    fun getTrustedSenders(): Set<String> {
+        return sharedPrefs.getStringSet("trusted_sms_senders", emptySet()) ?: emptySet()
+    }
+
+    fun getReviewNeededQueue(): List<com.example.antigravityfinance.service.sms.detection.SmsDetectionResult> {
+        val jsonStr = sharedPrefs.getString("review_needed_sms_queue", null) ?: return emptyList()
+        return try {
+            Json.decodeFromString<List<com.example.antigravityfinance.service.sms.detection.SmsDetectionResult>>(jsonStr)
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    fun saveReviewNeededQueue(list: List<com.example.antigravityfinance.service.sms.detection.SmsDetectionResult>) {
+        try {
+            val jsonStr = Json.encodeToString(list)
+            sharedPrefs.edit().putString("review_needed_sms_queue", jsonStr).apply()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    fun getIgnoredSmsList(): List<com.example.antigravityfinance.service.sms.detection.SmsDetectionResult> {
+        val jsonStr = sharedPrefs.getString("ignored_sms_list", null) ?: return emptyList()
+        return try {
+            Json.decodeFromString<List<com.example.antigravityfinance.service.sms.detection.SmsDetectionResult>>(jsonStr)
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    fun saveIgnoredSmsList(list: List<com.example.antigravityfinance.service.sms.detection.SmsDetectionResult>) {
+        try {
+            val jsonStr = Json.encodeToString(list)
+            sharedPrefs.edit().putString("ignored_sms_list", jsonStr).apply()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 }

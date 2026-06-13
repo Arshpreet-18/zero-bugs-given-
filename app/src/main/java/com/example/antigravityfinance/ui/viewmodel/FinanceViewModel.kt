@@ -21,6 +21,7 @@ import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.asRequestBody
+import com.example.antigravityfinance.service.sms.detection.*
 
 class FinanceViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -148,6 +149,11 @@ class FinanceViewModel(application: Application) : AndroidViewModel(application)
     
     private val _isSmsScanning = MutableStateFlow(false)
     val isSmsScanning: StateFlow<Boolean> = _isSmsScanning.asStateFlow()
+
+
+
+    private val _trustedSenders = MutableStateFlow<Set<String>>(securityHelper.getTrustedSenders())
+    val trustedSenders: StateFlow<Set<String>> = _trustedSenders.asStateFlow()
 
     // --- INITIALIZATION ---
     init {
@@ -311,16 +317,29 @@ class FinanceViewModel(application: Application) : AndroidViewModel(application)
     fun handleRealOcrTrigger(bitmap: android.graphics.Bitmap) {
         viewModelScope.launch {
             val apiKey = securityHelper.getGeminiApiKey()
-            if (apiKey.isBlank()) return@launch
+            if (apiKey.isBlank()) {
+                android.widget.Toast.makeText(getApplication(), "Gemini API Key is missing! Go to settings to set it.", android.widget.Toast.LENGTH_LONG).show()
+                return@launch
+            }
             
             _isOcrScanning.value = true
-            val transaction = OcrScanner.scanReceiptReal(bitmap, apiKey)
-            _isOcrScanning.value = false
-            
-            if (transaction != null) {
-                // Auto-confirm and insert directly
-                val finalTx = transaction.copy(status = TransactionStatus.CONFIRMED)
-                transactionRepository.insertTransaction(finalTx)
+            android.widget.Toast.makeText(getApplication(), "Scanning receipt using Gemini AI...", android.widget.Toast.LENGTH_SHORT).show()
+            try {
+                val transactions = OcrScanner.scanReceiptReal(bitmap, apiKey)
+                _isOcrScanning.value = false
+                if (transactions.isEmpty()) {
+                    android.widget.Toast.makeText(getApplication(), "No transactions detected in the image.", android.widget.Toast.LENGTH_LONG).show()
+                } else {
+                    for (transaction in transactions) {
+                        // Auto-confirm and insert directly
+                        val finalTx = transaction.copy(status = TransactionStatus.CONFIRMED)
+                        transactionRepository.insertTransaction(finalTx)
+                    }
+                    android.widget.Toast.makeText(getApplication(), "Found and added ${transactions.size} transactions!", android.widget.Toast.LENGTH_LONG).show()
+                }
+            } catch (e: Exception) {
+                _isOcrScanning.value = false
+                android.widget.Toast.makeText(getApplication(), "Gemini OCR failed: ${e.localizedMessage}", android.widget.Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -419,13 +438,15 @@ class FinanceViewModel(application: Application) : AndroidViewModel(application)
                         2. Merchant (string)
                         3. Suggested Category (one of: FOOD, SHOPPING, LIVELIHOOD, COMPULSORY, TRAVEL, INVESTMENT, OTHERS)
                         4. isIncome (boolean, true if receiving money/salary/credit, false if spending/paying/debit)
+                        5. Account/Payment Method (string, e.g., Bank Account, Credit Card, GPay, Wallet, etc. If no payment method or account is mentioned, set this to "Cash")
                         
                         Respond ONLY with a valid JSON object matching this schema:
                         {
                           "amount": 0.0,
                           "merchant": "Name",
                           "category": "FOOD",
-                          "isIncome": false
+                          "isIncome": false,
+                          "account": "Cash"
                         }
                     """.trimIndent()
                     val response = model.generateContent(prompt)
@@ -442,6 +463,7 @@ class FinanceViewModel(application: Application) : AndroidViewModel(application)
                     val merchant = json.optString("merchant", "Voice Entry")
                     val category = json.optString("category", "OTHERS")
                     val isIncome = json.optBoolean("isIncome", false)
+                    val account = json.optString("account", "Cash")
                     
                     val tx = Transaction(
                         amount = amount,
@@ -450,6 +472,7 @@ class FinanceViewModel(application: Application) : AndroidViewModel(application)
                         category = category,
                         notes = "Parsed from voice: $text",
                         isIncome = isIncome,
+                        account = account,
                         status = TransactionStatus.CONFIRMED
                     )
                     transactionRepository.insertTransaction(tx)
@@ -734,6 +757,31 @@ class FinanceViewModel(application: Application) : AndroidViewModel(application)
         _chatHistory.value = listOf(
             ChatMessage("welcome", "Chat log cleared. Ask me a new financial query!", false)
         )
+    }
+
+
+
+    fun addTrustedSender(senderId: String) {
+        if (senderId.isBlank()) return
+        securityHelper.saveTrustedSender(senderId)
+        _trustedSenders.value = securityHelper.getTrustedSenders()
+    }
+
+    fun logoutUser() {
+        viewModelScope.launch {
+            db.clearAllTables()
+            securityHelper.clearPin()
+            securityHelper.setInitialIncomeSet(false)
+            securityHelper.saveSyncedBalance(0.0)
+            
+            // Clear SMS persisted records
+            securityHelper.saveReviewNeededQueue(emptyList())
+            securityHelper.saveIgnoredSmsList(emptyList())
+            
+            _isPinSet.value = false
+            _isAuthRequired.value = false
+            _isInitialIncomeSet.value = false
+        }
     }
 
     // --- HELPERS ---

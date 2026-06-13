@@ -43,28 +43,31 @@ object OcrScanner {
         )
     }
 
-    suspend fun scanReceiptReal(bitmap: Bitmap, apiKey: String): Transaction? {
+    suspend fun scanReceiptReal(bitmap: Bitmap, apiKey: String): List<Transaction> {
         return try {
             val model = GenerativeModel(
                 modelName = "gemini-1.5-flash",
                 apiKey = apiKey
             )
             val prompt = """
-                Analyze this receipt or transaction screenshot. Extract:
+                Analyze this receipt or transaction screenshot. It may contain one or multiple transaction records.
+                Detect all records. For each transaction record, extract:
                 1. Total Amount (as a floating point number)
                 2. Merchant/Store Name (as string)
                 3. Date of transaction (if found, format as YYYY-MM-DD, otherwise return current date)
                 4. Suggested Category (one of: FOOD, SHOPPING, LIVELIHOOD, COMPULSORY, TRAVEL, INVESTMENT, OTHERS)
                 5. Brief note summarizing items or transaction.
                 
-                Respond ONLY with a valid JSON object matching this schema:
-                {
-                  "amount": 0.0,
-                  "merchant": "Name",
-                  "date": "2026-06-13",
-                  "category": "FOOD",
-                  "notes": "Croissant and coffee"
-                }
+                Respond ONLY with a valid JSON array of objects matching this schema:
+                [
+                  {
+                    "amount": 0.0,
+                    "merchant": "Name",
+                    "date": "2026-06-13",
+                    "category": "FOOD",
+                    "notes": "Croissant and coffee"
+                  }
+                ]
             """.trimIndent()
 
             val response = model.generateContent(
@@ -73,7 +76,7 @@ object OcrScanner {
                     text(prompt)
                 }
             )
-            val jsonText = response.text?.trim() ?: return null
+            val jsonText = response.text?.trim() ?: return emptyList()
             // Extract json if wrapped in ```json ... ```
             val cleanedJson = if (jsonText.startsWith("```json")) {
                 jsonText.substringAfter("```json").substringBefore("```").trim()
@@ -83,41 +86,48 @@ object OcrScanner {
                 jsonText
             }
 
-            val json = JSONObject(cleanedJson)
-            val amount = json.optDouble("amount", 0.0)
-            val merchant = json.optString("merchant", "Unknown Merchant")
-            val categoryStr = json.optString("category", "OTHERS")
-            val notes = json.optString("notes", "Scanned Receipt")
-            val dateStr = json.optString("date", "")
-            
-            val dateMs = if (dateStr.isNotEmpty()) {
-                try {
-                    val parts = dateStr.split("-")
-                    val cal = Calendar.getInstance()
-                    cal.set(parts[0].toInt(), parts[1].toInt() - 1, parts[2].toInt())
-                    cal.timeInMillis
-                } catch (e: Exception) {
+            val jsonArray = org.json.JSONArray(cleanedJson)
+            val list = mutableListOf<Transaction>()
+            for (i in 0 until jsonArray.length()) {
+                val json = jsonArray.getJSONObject(i)
+                val amount = json.optDouble("amount", 0.0)
+                val merchant = json.optString("merchant", "Unknown Merchant")
+                val categoryStr = json.optString("category", "OTHERS")
+                val notes = json.optString("notes", "Scanned Receipt")
+                val dateStr = json.optString("date", "")
+                
+                val dateMs = if (dateStr.isNotEmpty()) {
+                    try {
+                        val parts = dateStr.split("-")
+                        val cal = Calendar.getInstance()
+                        cal.set(parts[0].toInt(), parts[1].toInt() - 1, parts[2].toInt())
+                        cal.timeInMillis
+                    } catch (e: Exception) {
+                        System.currentTimeMillis()
+                    }
+                } else {
                     System.currentTimeMillis()
                 }
-            } else {
-                System.currentTimeMillis()
-            }
 
-            Transaction(
-                amount = amount,
-                merchant = merchant,
-                date = dateMs,
-                category = categoryStr,
-                notes = notes,
-                account = "Scanned Receipt",
-                status = TransactionStatus.CONFIRMED,
-                isIncome = false,
-                isRecurring = false,
-                detectedFromSms = false
-            )
+                list.add(
+                    Transaction(
+                        amount = amount,
+                        merchant = merchant,
+                        date = dateMs,
+                        category = categoryStr,
+                        notes = notes,
+                        account = "Scanned Receipt",
+                        status = TransactionStatus.CONFIRMED,
+                        isIncome = false,
+                        isRecurring = false,
+                        detectedFromSms = false
+                    )
+                )
+            }
+            list
         } catch (e: Exception) {
-            e.printStackTrace()
-            null
+            android.util.Log.e("OcrScanner", "Gemini OCR failed", e)
+            throw e
         }
     }
 }
