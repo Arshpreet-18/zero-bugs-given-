@@ -93,7 +93,7 @@ class FinanceViewModel(application: Application) : AndroidViewModel(application)
     // --- AI CHATBOT STATE ---
     private val _chatHistory = MutableStateFlow<List<ChatMessage>>(
         listOf(
-            ChatMessage("welcome", "Hello! I am Antigravity, your AI finance assistant. Ask me anything about your budgets, transactions, or investments.", false)
+            ChatMessage("welcome", "Hello! I am FinKlar, your AI finance assistant. Ask me anything about your budgets, transactions, or investments.", false)
         )
     )
     val chatHistory: StateFlow<List<ChatMessage>> = _chatHistory.asStateFlow()

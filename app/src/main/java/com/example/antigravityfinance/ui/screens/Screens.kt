@@ -73,7 +73,7 @@ fun SetupInitialIncomeDialog(
                 )
                 
                 Text(
-                    text = "Welcome to Antigravity Finance",
+                    text = "Welcome to FinKlar",
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                     textAlign = TextAlign.Center
                 )
@@ -1222,7 +1222,7 @@ fun AssistantScreen(
             OutlinedTextField(
                 value = inputText,
                 onValueChange = { inputText = it },
-                label = { Text("Ask Antigravity AI...") },
+                label = { Text("Ask FinKlar AI...") },
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(24.dp),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),

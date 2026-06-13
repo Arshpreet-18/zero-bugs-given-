@@ -1,6 +1,6 @@
-# Antigravity Finance
+# FinKlar
 
-Antigravity Finance is a professional, offline-first personal finance and money management mobile application designed for secure, localized banking analysis. Built with Jetpack Compose, Material 3, and Kotlin, the application integrates SQLite encryption, automatic transaction detection via SMS parsing, Gemini-powered OCR receipt extraction, and an intelligent financial chatbot assistant.
+FinKlar is a professional, offline-first personal finance and money management mobile application designed for secure, localized banking analysis. Built with Jetpack Compose, Material 3, and Kotlin, the application integrates SQLite encryption, automatic transaction detection via SMS parsing, Gemini-powered OCR receipt extraction, and an intelligent financial chatbot assistant.
 
 ---
 
@@ -70,7 +70,7 @@ To run automated checks, use the Gradle commands:
 
 ## 🔒 Security & Privacy Model
 
-Antigravity Finance is designed with privacy as a priority:
+FinKlar is designed with privacy as a priority:
 1.  **Offline-First**: None of your financial records are uploaded to cloud servers. All analytics are computed on-device.
 2.  **Passphrase Entropy**: Database decryption keys are generated using cryptographically secure random number generators and stored inside encrypted Android Shared Preferences.
 3.  **No Unverified Outputs**: Scanned SMS logs serve strictly as a mirror. If an SMS is deleted from the device inbox, the application purges the corresponding transaction on the next sync, keeping records clean and verified.
