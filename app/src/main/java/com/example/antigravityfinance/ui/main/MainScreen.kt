@@ -24,9 +24,7 @@ enum class MainTab(val displayName: String, val icon: ImageVector) {
     DASHBOARD("Dashboard", Icons.Rounded.Dashboard),
     TRANSACTIONS("Wallet", Icons.Rounded.ReceiptLong),
     ASSISTANT("AI Chat", Icons.Rounded.AutoAwesome),
-    BUDGETS("Budgets", Icons.Rounded.AccountBalance),
-    GOALS("Goals", Icons.Rounded.Flag),
-    INVESTMENTS("Investments", Icons.Rounded.TrendingUp),
+    FINANCIAL_TOOLS("Financial Tools", Icons.Rounded.Widgets),
     SETTINGS("Settings", Icons.Rounded.Settings)
 }
 
@@ -74,21 +72,8 @@ fun MainScreen(
 @Composable
 fun MainWorkspace(viewModel: FinanceViewModel) {
     var activeTab by remember { mutableStateOf(MainTab.DASHBOARD) }
-    val isInvestmentsEnabled by viewModel.isInvestmentsEnabled.collectAsState()
-
-    // Filter tabs if investments is disabled
-    val visibleTabs = remember(isInvestmentsEnabled) {
-        MainTab.values().filter {
-            it != MainTab.INVESTMENTS || isInvestmentsEnabled
-        }
-    }
-
-    // Auto-adjust active tab if it was set to INVESTMENTS but that got disabled
-    LaunchedEffect(isInvestmentsEnabled) {
-        if (!isInvestmentsEnabled && activeTab == MainTab.INVESTMENTS) {
-            activeTab = MainTab.DASHBOARD
-        }
-    }
+    val visibleTabs = remember { MainTab.values() }
+    val language by viewModel.language.collectAsState()
 
     Scaffold(
         bottomBar = {
@@ -101,7 +86,7 @@ fun MainWorkspace(viewModel: FinanceViewModel) {
                         selected = activeTab == tab,
                         onClick = { activeTab = tab },
                         icon = { Icon(tab.icon, contentDescription = tab.displayName) },
-                        label = { Text(tab.displayName, fontSize = 10.sp) },
+                        label = { Text(tab.displayName.translate(language), fontSize = 10.sp) },
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = MaterialTheme.colorScheme.primary,
                             selectedTextColor = MaterialTheme.colorScheme.primary,
@@ -121,9 +106,7 @@ fun MainWorkspace(viewModel: FinanceViewModel) {
                 MainTab.DASHBOARD -> DashboardScreen(viewModel = viewModel)
                 MainTab.TRANSACTIONS -> TransactionsScreen(viewModel = viewModel)
                 MainTab.ASSISTANT -> AssistantScreen(viewModel = viewModel)
-                MainTab.BUDGETS -> BudgetScreen(viewModel = viewModel)
-                MainTab.GOALS -> GoalsScreen(viewModel = viewModel)
-                MainTab.INVESTMENTS -> InvestmentsScreen(viewModel = viewModel)
+                MainTab.FINANCIAL_TOOLS -> FinancialToolsScreen(viewModel = viewModel)
                 MainTab.SETTINGS -> SettingsScreen(viewModel = viewModel)
             }
         }

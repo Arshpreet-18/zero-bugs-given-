@@ -159,8 +159,7 @@ class SecurityHelper(private val context: Context) {
     }
 
     fun getCurrency(): CurrencyType {
-        val name = sharedPrefs.getString("currency_type", CurrencyType.INR.name)
-        return try { CurrencyType.valueOf(name!!) } catch (e: Exception) { CurrencyType.INR }
+        return CurrencyType.INR
     }
 
     // Language Settings
@@ -207,7 +206,14 @@ class SecurityHelper(private val context: Context) {
 
     fun getSarvamKey(): String {
         val enc = sharedPrefs.getString("sarvam_key", "") ?: ""
-        return decrypt(enc)
+        if (enc.isBlank()) {
+            return "sk_hffq66ua_3qucYR1Zpdn8vjsFj8VT4kHo"
+        }
+        val decrypted = decrypt(enc)
+        if (decrypted.isBlank()) {
+            return "sk_hffq66ua_3qucYR1Zpdn8vjsFj8VT4kHo"
+        }
+        return decrypted
     }
 
     fun saveSyncedBalance(balance: Double) {
@@ -234,5 +240,61 @@ class SecurityHelper(private val context: Context) {
 
     fun setInitialIncomeSet(set: Boolean) {
         sharedPrefs.edit().putBoolean("initial_income_set", set).apply()
+    }
+
+    fun saveRentAmount(amount: Double) {
+        sharedPrefs.edit().putFloat("rent_amount", amount.toFloat()).apply()
+    }
+    fun getRentAmount(): Double {
+        return sharedPrefs.getFloat("rent_amount", 0.0f).toDouble()
+    }
+
+    fun saveEmiAmount(amount: Double) {
+        sharedPrefs.edit().putFloat("emi_amount", amount.toFloat()).apply()
+    }
+    fun getEmiAmount(): Double {
+        return sharedPrefs.getFloat("emi_amount", 0.0f).toDouble()
+    }
+
+    fun saveEmiDay(day: Int) {
+        sharedPrefs.edit().putInt("emi_day", day).apply()
+    }
+    fun getEmiDay(): Int {
+        return sharedPrefs.getInt("emi_day", 1)
+    }
+
+    fun saveSipAmount(amount: Double) {
+        sharedPrefs.edit().putFloat("sip_amount", amount.toFloat()).apply()
+    }
+    fun getSipAmount(): Double {
+        return sharedPrefs.getFloat("sip_amount", 0.0f).toDouble()
+    }
+
+    fun saveSipDay(day: Int) {
+        sharedPrefs.edit().putInt("sip_day", day).apply()
+    }
+    fun getSipDay(): Int {
+        return sharedPrefs.getInt("sip_day", 1)
+    }
+
+    fun saveOtherMandatory(amount: Double) {
+        sharedPrefs.edit().putFloat("other_mandatory", amount.toFloat()).apply()
+    }
+    fun getOtherMandatory(): Double {
+        return sharedPrefs.getFloat("other_mandatory", 0.0f).toDouble()
+    }
+
+    fun saveUserIncomeOverride(income: Double) {
+        sharedPrefs.edit().putFloat("user_income_override", income.toFloat()).apply()
+    }
+    fun getUserIncomeOverride(): Double {
+        return sharedPrefs.getFloat("user_income_override", 0.0f).toDouble()
+    }
+
+    fun saveLastWalletClearTimestamp(timestamp: Long) {
+        sharedPrefs.edit().putLong("last_wallet_clear_timestamp", timestamp).apply()
+    }
+    fun getLastWalletClearTimestamp(): Long {
+        return sharedPrefs.getLong("last_wallet_clear_timestamp", 0L)
     }
 }

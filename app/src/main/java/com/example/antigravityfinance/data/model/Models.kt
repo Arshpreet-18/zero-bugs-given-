@@ -101,3 +101,16 @@ data class ChatMessage(
     val isUser: Boolean,
     val timestamp: Long = System.currentTimeMillis()
 )
+
+@Serializable
+data class SplitShare(
+    val id: Int = 0,
+    val transactionId: Int,
+    val transactionAmount: Double,
+    val transactionMerchant: String,
+    val transactionDate: Long,
+    val contactName: String,
+    val shareAmount: Double,
+    val isSettled: Boolean = false
+)
+

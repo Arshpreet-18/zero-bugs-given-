@@ -20,7 +20,7 @@ class MainScreenViewModelTest {
         assertEquals(550.00, transaction.amount, 0.0)
         assertEquals("Starbucks", transaction.merchant)
         assertEquals("FOOD", transaction.category)
-        assertEquals(TransactionStatus.PENDING, transaction.status)
+        assertEquals(TransactionStatus.CONFIRMED, transaction.status)
         assertEquals(false, transaction.isIncome)
         assertEquals(true, transaction.detectedFromSms)
     }
@@ -35,7 +35,7 @@ class MainScreenViewModelTest {
         assertEquals(15000.00, transaction.amount, 0.0)
         assertEquals("Salary", transaction.merchant)
         assertEquals("SALARY", transaction.category)
-        assertEquals(TransactionStatus.PENDING, transaction.status)
+        assertEquals(TransactionStatus.CONFIRMED, transaction.status)
         assertEquals(true, transaction.isIncome)
     }
 

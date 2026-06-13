@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.antigravityfinance.data.local.db.FinanceDatabase
+import com.example.antigravityfinance.data.local.db.SplitEntity
 import com.example.antigravityfinance.data.model.*
 import com.example.antigravityfinance.data.repository.*
 import com.example.antigravityfinance.service.ai.AiAssistantService
@@ -14,6 +15,12 @@ import com.example.antigravityfinance.theme.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.UUID
+import com.google.ai.client.generativeai.GenerativeModel
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MultipartBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.asRequestBody
 
 class FinanceViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -55,11 +62,41 @@ class FinanceViewModel(application: Application) : AndroidViewModel(application)
     private val _language = MutableStateFlow(securityHelper.getLanguage())
     val language: StateFlow<LanguageType> = _language.asStateFlow()
 
+    private val _sarvamKey = MutableStateFlow(securityHelper.getSarvamKey())
+    val sarvamKey: StateFlow<String> = _sarvamKey.asStateFlow()
+
+    private val _geminiApiKey = MutableStateFlow(securityHelper.getGeminiApiKey())
+    val geminiApiKey: StateFlow<String> = _geminiApiKey.asStateFlow()
+
     private val _isInvestmentsEnabled = MutableStateFlow(securityHelper.isInvestmentsEnabled())
     val isInvestmentsEnabled: StateFlow<Boolean> = _isInvestmentsEnabled.asStateFlow()
 
     private val _isInitialIncomeSet = MutableStateFlow(securityHelper.isInitialIncomeSet())
     val isInitialIncomeSet: StateFlow<Boolean> = _isInitialIncomeSet.asStateFlow()
+
+    private val _rentAmount = MutableStateFlow(securityHelper.getRentAmount())
+    val rentAmount: StateFlow<Double> = _rentAmount.asStateFlow()
+
+    private val _emiAmount = MutableStateFlow(securityHelper.getEmiAmount())
+    val emiAmount: StateFlow<Double> = _emiAmount.asStateFlow()
+
+    private val _emiDay = MutableStateFlow(securityHelper.getEmiDay())
+    val emiDay: StateFlow<Int> = _emiDay.asStateFlow()
+
+    private val _sipAmount = MutableStateFlow(securityHelper.getSipAmount())
+    val sipAmount: StateFlow<Double> = _sipAmount.asStateFlow()
+
+    private val _sipDay = MutableStateFlow(securityHelper.getSipDay())
+    val sipDay: StateFlow<Int> = _sipDay.asStateFlow()
+
+    private val _otherMandatory = MutableStateFlow(securityHelper.getOtherMandatory())
+    val otherMandatory: StateFlow<Double> = _otherMandatory.asStateFlow()
+
+    private val _userIncomeOverride = MutableStateFlow(securityHelper.getUserIncomeOverride())
+    val userIncomeOverride: StateFlow<Double> = _userIncomeOverride.asStateFlow()
+
+    private val _lastWalletClearTimestamp = MutableStateFlow(securityHelper.getLastWalletClearTimestamp())
+    val lastWalletClearTimestamp: StateFlow<Long> = _lastWalletClearTimestamp.asStateFlow()
 
     // --- REPOSITORIES DATA STREAMS ---
     val allTransactions: StateFlow<List<Transaction>> = transactionRepository.allTransactions
@@ -76,6 +113,10 @@ class FinanceViewModel(application: Application) : AndroidViewModel(application)
 
     val investments: StateFlow<List<Investment>> = investmentRepository.allInvestments
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val allSplits: StateFlow<List<SplitShare>> = db.splitDao().getAllSplits().map { list ->
+        list.map { it.toDomain() }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // --- OCR SCANNING WORKFLOW STATE ---
     private val _isOcrScanning = MutableStateFlow(false)
@@ -118,7 +159,7 @@ class FinanceViewModel(application: Application) : AndroidViewModel(application)
                     budgetRepository.insertBudget(Budget(category = "SHOPPING", limitAmount = 5000.0))
                 }
             }
-            allTransactions.first().let { current ->
+            transactionRepository.allTransactions.first().let { current ->
                 if (current.isEmpty()) {
                     transactionRepository.insertTransaction(
                         Transaction(amount = 3500.0, merchant = "HDFC Bank", date = System.currentTimeMillis() - 86400000 * 2, category = "SALARY", isIncome = true, status = TransactionStatus.CONFIRMED)
@@ -129,6 +170,12 @@ class FinanceViewModel(application: Application) : AndroidViewModel(application)
                     transactionRepository.insertTransaction(
                         Transaction(amount = 2500.0, merchant = "Amazon India", date = System.currentTimeMillis(), category = "SHOPPING", isIncome = false, status = TransactionStatus.CONFIRMED)
                     )
+                }
+            }
+            // Auto-confirm all pending transactions in the database
+            transactionRepository.allTransactions.first().forEach { tx ->
+                if (tx.status == TransactionStatus.PENDING) {
+                    transactionRepository.confirmTransaction(tx.id)
                 }
             }
             reconcileSmsInbox()
@@ -197,6 +244,57 @@ class FinanceViewModel(application: Application) : AndroidViewModel(application)
         _isInvestmentsEnabled.value = enabled
     }
 
+    fun updateSarvamKey(key: String) {
+        securityHelper.saveSarvamKey(key)
+        _sarvamKey.value = securityHelper.getSarvamKey()
+    }
+
+    fun updateGeminiApiKey(key: String) {
+        securityHelper.saveGeminiApiKey(key)
+        _geminiApiKey.value = securityHelper.getGeminiApiKey()
+    }
+
+    fun updateRentAmount(amount: Double) {
+        securityHelper.saveRentAmount(amount)
+        _rentAmount.value = amount
+    }
+
+    fun updateEmiAmount(amount: Double) {
+        securityHelper.saveEmiAmount(amount)
+        _emiAmount.value = amount
+    }
+
+    fun updateEmiDay(day: Int) {
+        securityHelper.saveEmiDay(day)
+        _emiDay.value = day
+    }
+
+    fun updateSipAmount(amount: Double) {
+        securityHelper.saveSipAmount(amount)
+        _sipAmount.value = amount
+    }
+
+    fun updateSipDay(day: Int) {
+        securityHelper.saveSipDay(day)
+        _sipDay.value = day
+    }
+
+    fun updateOtherMandatory(amount: Double) {
+        securityHelper.saveOtherMandatory(amount)
+        _otherMandatory.value = amount
+    }
+
+    fun updateUserIncomeOverride(income: Double) {
+        securityHelper.saveUserIncomeOverride(income)
+        _userIncomeOverride.value = income
+    }
+
+    fun clearTransactionsFromWallet() {
+        val now = System.currentTimeMillis()
+        securityHelper.saveLastWalletClearTimestamp(now)
+        _lastWalletClearTimestamp.value = now
+    }
+
     // --- TRANSACTION CONFIRMATION WORKFLOW ACTIONS ---
     fun handleMockOcrTrigger(type: OcrScanner.MockReceiptType) {
         viewModelScope.launch {
@@ -204,14 +302,9 @@ class FinanceViewModel(application: Application) : AndroidViewModel(application)
             val transaction = OcrScanner.scanReceiptMock(type)
             _isOcrScanning.value = false
             
-            val duplicate = transactionRepository.checkForDuplicate(transaction.amount, transaction.merchant, transaction.date)
-            if (duplicate != null) {
-                _scannedTransaction.value = transaction
-                _duplicateMatchingTransaction.value = duplicate
-                _showDuplicateWarning.value = true
-            } else {
-                transactionRepository.insertTransaction(transaction)
-            }
+            // Auto-confirm and insert directly
+            val finalTx = transaction.copy(status = TransactionStatus.CONFIRMED)
+            transactionRepository.insertTransaction(finalTx)
         }
     }
 
@@ -225,14 +318,9 @@ class FinanceViewModel(application: Application) : AndroidViewModel(application)
             _isOcrScanning.value = false
             
             if (transaction != null) {
-                val duplicate = transactionRepository.checkForDuplicate(transaction.amount, transaction.merchant, transaction.date)
-                if (duplicate != null) {
-                    _scannedTransaction.value = transaction
-                    _duplicateMatchingTransaction.value = duplicate
-                    _showDuplicateWarning.value = true
-                } else {
-                    transactionRepository.insertTransaction(transaction)
-                }
+                // Auto-confirm and insert directly
+                val finalTx = transaction.copy(status = TransactionStatus.CONFIRMED)
+                transactionRepository.insertTransaction(finalTx)
             }
         }
     }
@@ -295,21 +383,193 @@ class FinanceViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    // --- DATABASE WRITE WRAPPERS FOR UI COMPATIBILITY ---
+    fun deleteTransaction(transaction: Transaction) {
+        viewModelScope.launch {
+            transactionRepository.deleteTransaction(transaction)
+        }
+    }
+
     fun addManualTransaction(amount: Double, merchant: String, isIncome: Boolean, category: String) {
         viewModelScope.launch {
-            val isIncomeOptional = isIncome && securityHelper.isInitialIncomeSet()
-            val status = if (isIncomeOptional) TransactionStatus.PENDING else TransactionStatus.CONFIRMED
             val newTx = Transaction(
                 amount = amount,
                 merchant = merchant,
                 date = System.currentTimeMillis(),
                 category = category,
                 isIncome = isIncome,
-                status = status
+                status = TransactionStatus.CONFIRMED
             )
             transactionRepository.insertTransaction(newTx)
         }
+    }
+
+    fun processVoiceTransaction(text: String, callback: (Transaction?) -> Unit) {
+        viewModelScope.launch {
+            val apiKey = securityHelper.getGeminiApiKey()
+            if (apiKey.isNotBlank()) {
+                try {
+                    val model = GenerativeModel(
+                        modelName = "gemini-1.5-flash",
+                        apiKey = apiKey
+                    )
+                    val prompt = """
+                        Analyze this spoken financial transaction: "$text".
+                        Extract:
+                        1. Amount (floating point number)
+                        2. Merchant (string)
+                        3. Suggested Category (one of: FOOD, SHOPPING, LIVELIHOOD, COMPULSORY, TRAVEL, INVESTMENT, OTHERS)
+                        4. isIncome (boolean, true if receiving money/salary/credit, false if spending/paying/debit)
+                        
+                        Respond ONLY with a valid JSON object matching this schema:
+                        {
+                          "amount": 0.0,
+                          "merchant": "Name",
+                          "category": "FOOD",
+                          "isIncome": false
+                        }
+                    """.trimIndent()
+                    val response = model.generateContent(prompt)
+                    val jsonText = response.text?.trim() ?: ""
+                    val cleanedJson = if (jsonText.startsWith("```json")) {
+                        jsonText.substringAfter("```json").substringBefore("```").trim()
+                    } else if (jsonText.startsWith("```")) {
+                        jsonText.substringAfter("```").substringBefore("```").trim()
+                    } else {
+                        jsonText
+                    }
+                    val json = org.json.JSONObject(cleanedJson)
+                    val amount = json.optDouble("amount", 0.0)
+                    val merchant = json.optString("merchant", "Voice Entry")
+                    val category = json.optString("category", "OTHERS")
+                    val isIncome = json.optBoolean("isIncome", false)
+                    
+                    val tx = Transaction(
+                        amount = amount,
+                        merchant = merchant,
+                        date = System.currentTimeMillis(),
+                        category = category,
+                        notes = "Parsed from voice: $text",
+                        isIncome = isIncome,
+                        status = TransactionStatus.CONFIRMED
+                    )
+                    transactionRepository.insertTransaction(tx)
+                    callback(tx)
+                    return@launch
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+            
+            // Fallback rule-based parsing
+            val tx = parseVoiceFallback(text)
+            if (tx != null) {
+                transactionRepository.insertTransaction(tx)
+            }
+            callback(tx)
+        }
+    }
+
+    fun transcribeAndTranslateAudio(audioFile: java.io.File, callback: (String?) -> Unit) {
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            val key = securityHelper.getSarvamKey()
+            if (key.isBlank()) {
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    callback(null)
+                }
+                return@launch
+            }
+            try {
+                val client = OkHttpClient.Builder()
+                    .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+                    .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+                    .writeTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+                    .build()
+
+                val requestBody = MultipartBody.Builder()
+                    .setType(MultipartBody.FORM)
+                    .addFormDataPart("model", "saaras:v3")
+                    .addFormDataPart("mode", "translate")
+                    .addFormDataPart(
+                        "file", 
+                        audioFile.name, 
+                        audioFile.asRequestBody("audio/mp4".toMediaType())
+                    )
+                    .build()
+
+                val request = Request.Builder()
+                    .url("https://api.sarvam.ai/speech-to-text")
+                    .post(requestBody)
+                    .addHeader("api-subscription-key", key)
+                    .build()
+
+                client.newCall(request).execute().use { response ->
+                    if (!response.isSuccessful) {
+                        System.err.println("Sarvam API error: ${response.code} ${response.message}")
+                        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                            callback(null)
+                        }
+                        return@launch
+                    }
+                    val body = response.body?.string() ?: ""
+                    val json = org.json.JSONObject(body)
+                    val transcript = json.optString("transcript", "")
+                    
+                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                        callback(transcript.ifBlank { null })
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    callback(null)
+                }
+            }
+        }
+    }
+
+    private fun parseVoiceFallback(text: String): Transaction? {
+        val lowercase = text.lowercase()
+        val amountRegex = Regex("(\\d+(?:\\.\\d+)?)\\s*(?:rupees|rs|inr)?|rs\\.?\\s*(\\d+(?:\\.\\d+)?)")
+        var amount = 0.0
+        val match = amountRegex.find(lowercase)
+        if (match != null) {
+            amount = match.groupValues[1].toDoubleOrNull() ?: match.groupValues[2].toDoubleOrNull() ?: 0.0
+        }
+        
+        var isIncome = lowercase.contains("received") || lowercase.contains("salary") || lowercase.contains("credited")
+        var merchant = "Voice Entry"
+        if (lowercase.contains("at ")) {
+            merchant = text.substringAfter("at ").substringBefore(" on").substringBefore(" for").trim()
+        } else if (lowercase.contains("to ")) {
+            merchant = text.substringAfter("to ").substringBefore(" on").substringBefore(" for").trim()
+        } else if (lowercase.contains("from ")) {
+            merchant = text.substringAfter("from ").substringBefore(" on").substringBefore(" for").trim()
+        }
+        
+        var category = "OTHERS"
+        if (lowercase.contains("starbucks") || lowercase.contains("coffee") || lowercase.contains("food") || lowercase.contains("domino") || lowercase.contains("pizza") || lowercase.contains("restaurant")) {
+            category = "FOOD"
+        } else if (lowercase.contains("salary") || lowercase.contains("income")) {
+            category = "SALARY"
+            isIncome = true
+        } else if (lowercase.contains("shopping") || lowercase.contains("clothes") || lowercase.contains("amazon") || lowercase.contains("flipkart")) {
+            category = "SHOPPING"
+        } else if (lowercase.contains("travel") || lowercase.contains("cab") || lowercase.contains("taxi") || lowercase.contains("uber") || lowercase.contains("ola") || lowercase.contains("petrol") || lowercase.contains("fuel")) {
+            category = "TRAVEL"
+        }
+        
+        if (amount > 0.0) {
+            return Transaction(
+                amount = amount,
+                merchant = merchant,
+                date = System.currentTimeMillis(),
+                category = category,
+                notes = "Parsed from voice (fallback): $text",
+                isIncome = isIncome,
+                status = TransactionStatus.CONFIRMED
+            )
+        }
+        return null
     }
 
     fun addInitialIncome(amount: Double) {
@@ -361,6 +621,37 @@ class FinanceViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    fun splitTransaction(transaction: Transaction, selectedContacts: List<String>) {
+        viewModelScope.launch {
+            if (selectedContacts.isEmpty()) return@launch
+            val totalParts = selectedContacts.size + 1
+            val shareAmount = transaction.amount / totalParts
+            selectedContacts.forEach { contact ->
+                db.splitDao().insert(
+                    SplitEntity(
+                        transactionId = transaction.id,
+                        transactionAmount = transaction.amount,
+                        transactionMerchant = transaction.merchant,
+                        transactionDate = transaction.date,
+                        contactName = contact,
+                        shareAmount = shareAmount,
+                        isSettled = false
+                    )
+                )
+            }
+        }
+    }
+
+    fun settleSplit(splitId: Int) {
+        viewModelScope.launch {
+            val splitDao = db.splitDao()
+            val entity = splitDao.getSplitById(splitId)
+            if (entity != null) {
+                splitDao.update(entity.copy(isSettled = true))
+            }
+        }
+    }
+
     // --- SMS SIMULATION TRIGGER ---
     fun simulateIncomingSms(body: String) {
         viewModelScope.launch {
@@ -374,12 +665,8 @@ class FinanceViewModel(application: Application) : AndroidViewModel(application)
                     _smsSyncedBalance.value = balance
                 }
                 
-                val isAutoConfirm = transactionRepository.isMerchantAutoConfirm(parsed.merchant)
-                val isIncomeOptional = parsed.isIncome && securityHelper.isInitialIncomeSet()
-                val finalStatus = if (isAutoConfirm && !isIncomeOptional) TransactionStatus.CONFIRMED else TransactionStatus.PENDING
-                
+                val statusToInsert = TransactionStatus.CONFIRMED
                 val duplicate = transactionRepository.checkForDuplicate(parsed.amount, parsed.merchant, parsed.date)
-                val statusToInsert = if (duplicate != null) TransactionStatus.PENDING else finalStatus
                 val notesToInsert = if (duplicate != null) "SMS matches Transaction #${duplicate.id} (${duplicate.merchant})" else parsed.notes
                 
                 val finalTx = parsed.copy(status = statusToInsert, notes = notesToInsert)

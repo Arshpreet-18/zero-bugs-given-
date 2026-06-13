@@ -22,8 +22,8 @@ object OcrScanner {
         val notes: String
     ) {
         STARBUCKS("Starbucks Coffee", 450.00, "FOOD", "Credit Card", "Mocha and Croissant"),
-        BLINKIT("Blinkit Delivery", 1250.0, "GROCERIES", "Bank Account", "Weekly vegetables and dairy"),
-        UBER("Uber India", 380.0, "TRANSPORT", "Cash", "Ride to office"),
+        BLINKIT("Blinkit Delivery", 1250.0, "LIVELIHOOD", "Bank Account", "Weekly vegetables and dairy"),
+        UBER("Uber India", 380.0, "TRAVEL", "Cash", "Ride to office"),
         RELIANCE_DIGITAL("Reliance Digital", 8999.0, "SHOPPING", "Bank Account", "Bluetooth headphones purchase")
     }
 
@@ -36,7 +36,7 @@ object OcrScanner {
             category = type.category,
             notes = type.notes,
             account = type.account,
-            status = TransactionStatus.PENDING,
+            status = TransactionStatus.CONFIRMED,
             isIncome = false,
             isRecurring = false,
             detectedFromSms = false
@@ -54,7 +54,7 @@ object OcrScanner {
                 1. Total Amount (as a floating point number)
                 2. Merchant/Store Name (as string)
                 3. Date of transaction (if found, format as YYYY-MM-DD, otherwise return current date)
-                4. Suggested Category (one of: FOOD, SHOPPING, GROCERIES, UTILITIES, TRANSPORT, ENTERTAINMENT, INVESTMENT, OTHERS)
+                4. Suggested Category (one of: FOOD, SHOPPING, LIVELIHOOD, COMPULSORY, TRAVEL, INVESTMENT, OTHERS)
                 5. Brief note summarizing items or transaction.
                 
                 Respond ONLY with a valid JSON object matching this schema:
@@ -110,7 +110,7 @@ object OcrScanner {
                 category = categoryStr,
                 notes = notes,
                 account = "Scanned Receipt",
-                status = TransactionStatus.PENDING,
+                status = TransactionStatus.CONFIRMED,
                 isIncome = false,
                 isRecurring = false,
                 detectedFromSms = false

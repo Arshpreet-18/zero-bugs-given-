@@ -103,6 +103,7 @@ dependencies {
 
   // Google Generative AI
   implementation(libs.google.generativeai)
+  implementation(libs.okhttp)
 
   // Graphics Path 16KB alignment compliance
   implementation(libs.androidx.graphics.path)

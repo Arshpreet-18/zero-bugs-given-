@@ -3,6 +3,7 @@ package com.example.antigravityfinance.data.repository
 import com.example.antigravityfinance.data.local.db.*
 import com.example.antigravityfinance.data.model.*
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlin.math.abs
 
@@ -183,11 +184,16 @@ class BudgetRepository(private val budgetDao: BudgetDao) {
 
     suspend fun recalculateSpent(transactions: List<Transaction>) {
         val expenses = transactions.filter { it.status == TransactionStatus.CONFIRMED && !it.isIncome }
-        val budgets = budgetDao.getAllBudgets().map { list -> list.map { it.toDomain() } }
-        
-        // Reset all budgets first
-        val currentBudgets = budgetDao.getBudgetByCategory("All")
-        // We will do updates for each
+        val budgets = budgetDao.getAllBudgets().first()
+        for (budget in budgets) {
+            val category = budget.category
+            val spent = if (category == "All") {
+                expenses.sumOf { it.amount }
+            } else {
+                expenses.filter { it.category.uppercase() == category.uppercase() }.sumOf { it.amount }
+            }
+            budgetDao.update(budget.copy(spentAmount = spent))
+        }
     }
 }
 
@@ -213,13 +219,14 @@ class GoalRepository(private val savingsGoalDao: SavingsGoalDao) {
                     updatedStreakCount = 1
                     updatedLastUpdatedStreak = now
                 } else {
-                    val diff = now - lastUpdate
-                    val oneDayMs = 24 * 60 * 60 * 1000L
-                    val twoDaysMs = 48 * 60 * 60 * 1000L
-                    if (diff in oneDayMs..twoDaysMs) {
+                    val tz = java.util.TimeZone.getDefault()
+                    val dayNow = (now + tz.getOffset(now)) / (24 * 60 * 60 * 1000L)
+                    val dayLast = (lastUpdate + tz.getOffset(lastUpdate)) / (24 * 60 * 60 * 1000L)
+                    
+                    if (dayNow == dayLast + 1L) {
                         updatedStreakCount = existing.streakCount + 1
                         updatedLastUpdatedStreak = now
-                    } else if (diff > twoDaysMs) {
+                    } else if (dayNow > dayLast + 1L) {
                         updatedStreakCount = 1
                         updatedLastUpdatedStreak = now
                     } else {

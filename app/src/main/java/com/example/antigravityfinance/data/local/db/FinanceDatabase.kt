@@ -13,9 +13,10 @@ import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
         BudgetEntity::class,
         SavingsGoalEntity::class,
         InvestmentEntity::class,
-        RecurringMerchantEntity::class
+        RecurringMerchantEntity::class,
+        SplitEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class FinanceDatabase : RoomDatabase() {
@@ -24,6 +25,8 @@ abstract class FinanceDatabase : RoomDatabase() {
     abstract fun savingsGoalDao(): SavingsGoalDao
     abstract fun investmentDao(): InvestmentDao
     abstract fun recurringMerchantDao(): RecurringMerchantDao
+    abstract fun splitDao(): SplitDao
+
 
     companion object {
         @Volatile

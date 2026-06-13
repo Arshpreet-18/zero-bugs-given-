@@ -46,7 +46,7 @@ class TransactionSmsReceiver : BroadcastReceiver() {
             CoroutineScope(Dispatchers.IO).launch {
                 val duplicate = repo.checkForDuplicate(parsed.amount, parsed.merchant, parsed.date)
                 val isAutoConfirm = repo.isMerchantAutoConfirm(parsed.merchant)
-                val finalStatus = if (isAutoConfirm) TransactionStatus.CONFIRMED else TransactionStatus.PENDING
+                val finalStatus = TransactionStatus.CONFIRMED
 
                 if (duplicate == null) {
                     repo.insertTransaction(parsed.copy(status = finalStatus))
@@ -54,7 +54,7 @@ class TransactionSmsReceiver : BroadcastReceiver() {
                     Log.d("SMSReceiver", "Duplicate transaction detected: #${duplicate.id}")
                     repo.insertTransaction(
                         parsed.copy(
-                            status = TransactionStatus.PENDING,
+                            status = TransactionStatus.CONFIRMED,
                             notes = "SMS matches Transaction #${duplicate.id} (${duplicate.merchant})"
                         )
                     )
@@ -93,8 +93,8 @@ object SmsParser {
             val pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE)
             val matcher = pattern.matcher(text)
             if (matcher.find()) {
-                val amountStr = matcher.group(1).replace(",", "")
-                amount = amountStr.toDoubleOrNull()
+                val amountStr = matcher.group(1)?.replace(",", "")
+                amount = amountStr?.toDoubleOrNull()
                 if (amount != null) break
             }
         }
@@ -107,8 +107,8 @@ object SmsParser {
         val balanceMatcher = balancePattern.matcher(text)
         var balance: Double? = null
         if (balanceMatcher.find()) {
-            val balStr = balanceMatcher.group(1).replace(",", "")
-            balance = balStr.toDoubleOrNull()
+            val balStr = balanceMatcher.group(1)?.replace(",", "")
+            balance = balStr?.toDoubleOrNull()
         }
 
         var merchant = "Unknown Merchant"
@@ -125,7 +125,7 @@ object SmsParser {
             val pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE)
             val matcher = pattern.matcher(body)
             if (matcher.find()) {
-                var match = matcher.group(1).trim()
+                var match = matcher.group(1)?.trim() ?: ""
                 if (match.contains("@")) {
                     match = match.split("@")[0].trim()
                 }
@@ -151,7 +151,7 @@ object SmsParser {
             category = category,
             notes = "Parsed from SMS",
             account = if (text.contains("card")) "Credit Card" else "Bank Account",
-            status = TransactionStatus.PENDING,
+            status = TransactionStatus.CONFIRMED,
             isIncome = isIncome,
             isRecurring = false,
             detectedFromSms = true

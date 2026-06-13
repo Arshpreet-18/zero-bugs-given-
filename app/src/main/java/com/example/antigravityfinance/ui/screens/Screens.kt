@@ -42,6 +42,225 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+object Translator {
+    private val translations = mapOf(
+        "en" to mapOf(
+            "Dashboard" to "Dashboard",
+            "Wallet" to "Wallet",
+            "AI Chat" to "AI Chat",
+            "Financial Tools" to "Financial Tools",
+            "Settings" to "Settings",
+            
+            "Net Balance" to "Net Balance",
+            "Monthly Income" to "Monthly Income",
+            "Monthly Expense" to "Monthly Expense",
+            "Recent Transactions" to "Recent Transactions",
+            "See All" to "See All",
+            "Low Balance Warning" to "Low Balance Warning",
+            "Your balance is below the minimum required for SIP!" to "Your balance is below the minimum required for SIP!",
+            "Total Credit" to "Total Credit",
+            "Total Debit" to "Total Debit",
+            "Category Breakdown" to "Category Breakdown",
+            "No confirmed transactions recorded yet.\nGo to Wallet tab or simulate SMS alerts!" to "No confirmed transactions recorded yet.\nGo to Wallet tab or simulate SMS alerts!",
+            
+            "Visual Themes" to "Visual Themes",
+            "Dynamic Theme" to "Dynamic Theme",
+            "Vibrant gradients, rounded cards & playful transitions." to "Vibrant gradients, rounded cards & playful transitions.",
+            "Professional Theme" to "Professional Theme",
+            "Elegant borders, dark charcoal & executive dashboard designs." to "Elegant borders, dark charcoal & executive dashboard designs.",
+            "Accent Color" to "Accent Color",
+            "Display Mode" to "Display Mode",
+            "System Theme" to "System Theme",
+            "Light Mode" to "Light Mode",
+            "Dark Mode" to "Dark Mode",
+            "Security Gates" to "Security Gates",
+            "Lock App with PIN" to "Lock App with PIN",
+            "Secure local wallet with secure PIN keyboard" to "Secure local wallet with secure PIN keyboard",
+            "Localization" to "Localization",
+            "Language" to "Language",
+            "Enable Investments Module" to "Enable Investments Module",
+            
+            "AI Simulators & Tools" to "AI Simulators & Tools",
+            "Scan Receipt" to "Scan Receipt",
+            "Simulate SMS" to "Simulate SMS",
+            "Add Manual" to "Add Manual",
+            "Scan SMS Inbox" to "Scan SMS Inbox",
+            "Search transactions..." to "Search transactions...",
+            "Sort by:" to "Sort by:",
+            "No transactions synced yet. Tap Scan SMS Inbox or Simulate SMS!" to "No transactions synced yet. Tap Scan SMS Inbox or Simulate SMS!",
+            
+            "AI Finance Assistant" to "AI Finance Assistant",
+            "Type a message..." to "Type a message...",
+            "Send" to "Send",
+            
+            "Budgets" to "Budgets",
+            "Savings Goals" to "Savings Goals",
+            "Investments" to "Investments",
+            "Splitwise" to "Splitwise",
+            
+            "Confirm" to "Confirm",
+            "Cancel" to "Cancel",
+            "Ignore" to "Ignore",
+            "Save" to "Save",
+            "Title" to "Title",
+            "Amount" to "Amount",
+            "Category" to "Category",
+            "Type" to "Type",
+            "Income" to "Income",
+            "Expense" to "Expense",
+            "Delete" to "Delete",
+            "Add Transaction" to "Add Transaction",
+            "Transaction Details" to "Transaction Details",
+            
+            "Date" to "Date",
+            "Merchant" to "Merchant",
+            "Last Synced Bank Balance" to "Last Synced Bank Balance",
+            "Voice Input" to "Voice Input",
+            "Camera Scan" to "Camera Scan",
+            "Simulate Mock Receipt" to "Simulate Mock Receipt",
+            "Choose scanning method:" to "Choose scanning method:",
+            "Voice transaction recorded!" to "Voice transaction recorded!",
+            "Failed to parse voice command." to "Failed to parse voice command.",
+            "Tap microphone to speak" to "Tap microphone to speak",
+            "Spoken Text / Translation" to "Spoken Text / Translation",
+            "Presets for Testing:" to "Presets for Testing:",
+            "Speak your transaction, and Sarvam AI will automatically parse and record it." to "Speak your transaction, and Sarvam AI will automatically parse and record it.",
+            "Safe Spend" to "Safe Spend",
+            "Safe Spend Calculator" to "Safe Spend Calculator",
+            "Save Financial Setup" to "Save Financial Setup",
+            "Monthly Income Override (0 = auto)" to "Monthly Income Override (0 = auto)",
+            "Monthly Rent (₹)" to "Monthly Rent (₹)",
+            "EMI Amount (₹)" to "EMI Amount (₹)",
+            "EMI Due Day (1-31)" to "EMI Due Day (1-31)",
+            "SIP Amount (₹)" to "SIP Amount (₹)",
+            "SIP Due Day (1-31)" to "SIP Due Day (1-31)",
+            "Other Mandatory Bills (₹)" to "Other Mandatory Bills (₹)",
+            "Safe Spend Remaining" to "Safe Spend Remaining",
+            "Daily Safe Limit" to "Daily Safe Limit",
+            "Clear Wallet Transactions" to "Clear Wallet Transactions",
+            "Clear Wallet" to "Clear Wallet",
+            "Maintenance & Reset" to "Maintenance & Reset",
+            "Hides transactions from wallet view. Preserves data for charts and calculators." to "Hides transactions from wallet view. Preserves data for charts and calculators.",
+            "Wallet transactions cleared!" to "Wallet transactions cleared!",
+            "API Keys updated successfully!" to "API Keys updated successfully!",
+            "Low Balance Alert: EMI" to "Low Balance Alert: EMI",
+            "Low Balance Alert: SIP" to "Low Balance Alert: SIP",
+            "Domain Spend Percentage" to "Domain Spend Percentage"
+        ),
+        "hi" to mapOf(
+            "Dashboard" to "डैशबोर्ड",
+            "Wallet" to "बटुआ",
+            "AI Chat" to "एआई चैट",
+            "Financial Tools" to "वित्तीय साधन",
+            "Settings" to "सेटिंग्स",
+            
+            "Net Balance" to "कुल जमा राशि",
+            "Monthly Income" to "मासिक आय",
+            "Monthly Expense" to "मासिक खर्च",
+            "Recent Transactions" to "हाल के लेन-देन",
+            "See All" to "सभी देखें",
+            "Low Balance Warning" to "कम बैलेंस की चेतावनी",
+            "Your balance is below the minimum required for SIP!" to "काफी कम बैलेंस",
+            "Total Credit" to "कुल क्रेडिट",
+            "Total Debit" to "कुल डेबिट",
+            "Category Breakdown" to "श्रेणी विवरण",
+            "No confirmed transactions recorded yet.\nGo to Wallet tab or simulate SMS alerts!" to "अभी तक कोई पुष्टि नहीं हुई लेन-देन दर्ज नहीं है।\nवॉलेट टैब पर जाएं या एसएमएस अलर्ट सिमुलेट करें!",
+            
+            "Visual Themes" to "दृश्य थीम्स",
+            "Dynamic Theme" to "डायनेमिक थीम",
+            "Vibrant gradients, rounded cards & playful transitions." to "वाइब्रेंट ग्रेडिएंट्स, गोल कार्ड और प्लेफुल ट्रांजिशन।",
+            "Professional Theme" to "प्रोफेशनल थीम",
+            "Elegant borders, dark charcoal & executive dashboard designs." to "सुरुचिपूर्ण बॉर्डर, डार्क चारकोल और कार्यकारी डैशबोर्ड डिज़ाइन।",
+            "Accent Color" to "एक्सेंट रंग",
+            "Display Mode" to "प्रदर्शन मोड",
+            "System Theme" to "सिस्टम थीम",
+            "Light Mode" to "लाइट मोड",
+            "Dark Mode" to "डार्क मोड",
+            "Security Gates" to "सुरक्षा द्वार",
+            "Lock App with PIN" to "पिन के साथ ऐप लॉक करें",
+            "Secure local wallet with secure PIN keyboard" to "सुरक्षित पिन कीबोर्ड के साथ स्थानीय वॉलेट सुरक्षित करें",
+            "Localization" to "स्थानीयकरण",
+            "Language" to "भाषा",
+            "Enable Investments Module" to "निवेश मॉड्यूल सक्षम करें",
+            
+            "AI Simulators & Tools" to "एआई सिमुलेटर और उपकरण",
+            "Scan Receipt" to "रसीद स्कैन करें",
+            "Simulate SMS" to "एसएमएस सिमुलेट करें",
+            "Add Manual" to "मैन्युअल जोड़ें",
+            "Scan SMS Inbox" to "एसएमएस इनबॉक्स स्कैन करें",
+            "Search transactions..." to "लेन-देन खोजें...",
+            "Sort by:" to "क्रमबद्ध करें:",
+            "No transactions synced yet. Tap Scan SMS Inbox or Simulate SMS!" to "अभी तक कोई लेन-देन सिंक नहीं हुआ है। एसएमएस इनबॉक्स स्कैन करें या एसएमएस सिमुलेट करें!",
+            
+            "AI Finance Assistant" to "एआई वित्त सहायक",
+            "Type a message..." to "एक संदेश टाइप करें...",
+            "Send" to "भेजें",
+            
+            "Budgets" to "बजट",
+            "Savings Goals" to "बचत लक्ष्य",
+            "Investments" to "निवेश",
+            "Splitwise" to "स्प्लिटवाइज़",
+            
+            "Confirm" to "पुष्टि करें",
+            "Cancel" to "रद्द करें",
+            "Ignore" to "अनदेखा करें",
+            "Save" to "सहेजें",
+            "Title" to "शीर्षक",
+            "Amount" to "राशि",
+            "Category" to "श्रेणी",
+            "Type" to "प्रकार",
+            "Income" to "आय",
+            "Expense" to "खर्च",
+            "Delete" to "हटाएं",
+            "Add Transaction" to "लेन-देन जोड़ें",
+            "Transaction Details" to "लेन-देन विवरण",
+            
+            "Date" to "दिनांक",
+            "Merchant" to "व्यापारी",
+            "Last Synced Bank Balance" to "अंतिम सिंक किया गया बैंक बैलेंस",
+            "Voice Input" to "आवाज इनपुट",
+            "Camera Scan" to "कैमरा स्कैन",
+            "Simulate Mock Receipt" to "नकली रसीद सिमुलेट करें",
+            "Choose scanning method:" to "स्कैनिंग विधि चुनें:",
+            "Voice transaction recorded!" to "आवाज लेन-देन दर्ज हो गया!",
+            "Failed to parse voice command." to "वॉयस कमांड पार्स करने में विफल।",
+            "Tap microphone to speak" to "बोलने के लिए माइक्रोफ़ोन टैप करें",
+            "Spoken Text / Translation" to "बोला गया पाठ / अनुवाद",
+            "Presets for Testing:" to "परीक्षण के लिए प्रीसेट:",
+            "Speak your transaction, and Sarvam AI will automatically parse and record it." to "अपना लेन-देन बोलें, और सर्वम एआई इसे स्वचालित रूप से पार्स और दर्ज करेगा।",
+            "Safe Spend" to "सुरक्षित खर्च",
+            "Safe Spend Calculator" to "सुरक्षित खर्च कैलकुलेटर",
+            "Save Financial Setup" to "वित्तीय सेटअप सहेजें",
+            "Monthly Income Override (0 = auto)" to "मासिक आय अधिभावी (0 = ऑटो)",
+            "Monthly Rent (₹)" to "मासिक किराया (₹)",
+            "EMI Amount (₹)" to "ईएमआई राशि (₹)",
+            "EMI Due Day (1-31)" to "ईएमआई देय दिन (1-31)",
+            "SIP Amount (₹)" to "एसआईपी राशि (₹)",
+            "SIP Due Day (1-31)" to "एसआईपी देय दिन (1-31)",
+            "Other Mandatory Bills (₹)" to "अन्य अनिवार्य बिल (₹)",
+            "Safe Spend Remaining" to "सुरक्षित खर्च शेष",
+            "Daily Safe Limit" to "दैनिक सुरक्षित सीमा",
+            "Clear Wallet Transactions" to "वॉलेट लेन-देन साफ करें",
+            "Clear Wallet" to "वॉलेट साफ करें",
+            "Maintenance & Reset" to "रखरखाव और रीसेट",
+            "Hides transactions from wallet view. Preserves data for charts and calculators." to "वॉलेट दृश्य से लेन-देन छुपाता है। चार्ट और कैलकुलेटर के लिए डेटा रखता है।",
+            "Wallet transactions cleared!" to "वॉलेट लेन-देन साफ हो गए!",
+            "API Keys updated successfully!" to "एपीआई कुंजी सफलतापूर्वक अपडेट की गई!",
+            "Low Balance Alert: EMI" to "कम बैलेंस अलर्ट: ईएमआई",
+            "Low Balance Alert: SIP" to "कम बैलेंस अलर्ट: एसआईपी",
+            "Domain Spend Percentage" to "डोमेन खर्च प्रतिशत"
+        )
+    )
+
+    fun translate(text: String, language: LanguageType): String {
+        return translations[language.code]?.get(text) ?: text
+    }
+}
+
+fun String.translate(language: LanguageType): String {
+    return Translator.translate(this, language)
+}
+
 @Composable
 fun SetupInitialIncomeDialog(
     currencySymbol: String,
@@ -124,6 +343,316 @@ fun SetupInitialIncomeDialog(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun VoiceTransactionDialog(
+    language: LanguageType,
+    viewModel: FinanceViewModel,
+    onDismiss: () -> Unit,
+    onSave: (String) -> Unit
+) {
+    var spokenText by remember { mutableStateOf("") }
+    var isRecording by remember { mutableStateOf(false) }
+    var isTranslating by remember { mutableStateOf(false) }
+    var recordingTimer by remember { mutableStateOf(15) }
+    val scope = rememberCoroutineScope()
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    val audioFile = remember { java.io.File(context.cacheDir, "sarvam_voice.m4a") }
+    val audioRecorder = remember { com.example.antigravityfinance.service.audio.AudioRecorder(context) }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            isRecording = true
+            recordingTimer = 15
+            try {
+                audioRecorder.startRecording(audioFile)
+                scope.launch {
+                    while (recordingTimer > 0 && isRecording) {
+                        delay(1000)
+                        recordingTimer--
+                    }
+                    if (isRecording) {
+                        isRecording = false
+                        audioRecorder.stopRecording()
+                        isTranslating = true
+                        viewModel.transcribeAndTranslateAudio(audioFile) { transcript ->
+                            isTranslating = false
+                            if (transcript != null) {
+                                spokenText = transcript
+                            } else {
+                                android.widget.Toast.makeText(context, "Failed to translate voice audio.".translate(language), android.widget.Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                isRecording = false
+                e.printStackTrace()
+                android.widget.Toast.makeText(context, "Error starting recorder: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            android.widget.Toast.makeText(context, "Microphone permission is required to record audio.".translate(language), android.widget.Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    val startRecordingFlow = {
+        val hasMicPermission = androidx.core.content.ContextCompat.checkSelfPermission(
+            context,
+            android.Manifest.permission.RECORD_AUDIO
+        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+
+        if (hasMicPermission) {
+            isRecording = true
+            recordingTimer = 15
+            try {
+                audioRecorder.startRecording(audioFile)
+                scope.launch {
+                    while (recordingTimer > 0 && isRecording) {
+                        delay(1000)
+                        recordingTimer--
+                    }
+                    if (isRecording) {
+                        isRecording = false
+                        audioRecorder.stopRecording()
+                        isTranslating = true
+                        viewModel.transcribeAndTranslateAudio(audioFile) { transcript ->
+                            isTranslating = false
+                            if (transcript != null) {
+                                spokenText = transcript
+                            } else {
+                                android.widget.Toast.makeText(context, "Failed to translate voice audio.".translate(language), android.widget.Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                isRecording = false
+                e.printStackTrace()
+                android.widget.Toast.makeText(context, "Error starting recorder: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            permissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
+        }
+    }
+
+    val stopRecordingFlow = {
+        isRecording = false
+        audioRecorder.stopRecording()
+        isTranslating = true
+        viewModel.transcribeAndTranslateAudio(audioFile) { transcript ->
+            isTranslating = false
+            if (transcript != null) {
+                spokenText = transcript
+            } else {
+                android.widget.Toast.makeText(context, "Failed to translate voice audio.".translate(language), android.widget.Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Mic,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(28.dp)
+                    )
+                    Text(
+                        text = "Sarvam AI Voice Input".translate(language),
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                    )
+                }
+
+                Text(
+                    text = "Speak your transaction, and Sarvam AI will automatically parse and record it.".translate(language),
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                if (isTranslating) {
+                    CircularProgressIndicator(modifier = Modifier.size(48.dp))
+                    Text(
+                        text = "Translating speech with Sarvam AI...".translate(language),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                } else if (isRecording) {
+                    val waveTransition = rememberInfiniteTransition(label = "mic_wave")
+                    val waveScale by waveTransition.animateFloat(
+                        initialValue = 0.6f,
+                        targetValue = 1.4f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(600, easing = LinearEasing),
+                            repeatMode = RepeatMode.Reverse
+                        ),
+                        label = "wave_scale"
+                    )
+                    Box(
+                        modifier = Modifier
+                            .size(100.dp)
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape)
+                            .clickable { stopRecordingFlow() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(60.dp * waveScale)
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.25f), CircleShape)
+                        )
+                        Box(
+                            modifier = Modifier
+                                .size(50.dp)
+                                .background(MaterialTheme.colorScheme.primary, CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Default.Stop, contentDescription = "Stop", tint = Color.White, modifier = Modifier.size(24.dp))
+                        }
+                    }
+                    Text(
+                        text = "${"Recording...".translate(language)} (${recordingTimer}s)",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                } else {
+                    IconButton(
+                        onClick = { startRecordingFlow() },
+                        modifier = Modifier
+                            .size(72.dp)
+                            .background(MaterialTheme.colorScheme.primaryContainer, CircleShape)
+                    ) {
+                        Icon(
+                            Icons.Default.Mic,
+                            contentDescription = "Start Recording",
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                    Text("Tap microphone to speak".translate(language), style = MaterialTheme.typography.bodySmall)
+                }
+
+                OutlinedTextField(
+                    value = spokenText,
+                    onValueChange = { spokenText = it },
+                    label = { Text("Spoken Text / Translation".translate(language)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                )
+
+                Text(
+                    text = "Presets for Testing:".translate(language),
+                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
+                    modifier = Modifier.align(Alignment.Start)
+                )
+                
+                val presets = listOf(
+                    "Spent 350 rupees at Starbucks on Coffee",
+                    "Received salary of 65000 rupees from company",
+                    "Paid 1250 rupees to Domino's Pizza for party"
+                )
+                
+                presets.forEach { preset ->
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { spokenText = preset },
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = preset,
+                            modifier = Modifier.padding(8.dp),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Cancel".translate(language))
+                    }
+                    Button(
+                        onClick = {
+                            if (spokenText.isNotBlank()) {
+                                onSave(spokenText)
+                            }
+                        },
+                        enabled = spokenText.isNotBlank(),
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Process".translate(language))
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SipAlertCard(
+    smsSyncedBalance: Double,
+    totalSipAmount: Double,
+    currencySymbol: String,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                Icons.Rounded.Warning,
+                contentDescription = "Warning",
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(32.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Column {
+                Text(
+                    text = "Low Balance Alert for Active SIPs",
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onErrorContainer
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "Your synced bank balance ($currencySymbol${String.format("%,.2f", smsSyncedBalance)}) is lower than your active monthly SIP commitments ($currencySymbol${String.format("%,.0f", totalSipAmount)}). Please maintain sufficient balance to avoid failed transaction charges.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.8f)
+                )
+            }
+        }
+    }
+}
+
 // --- DASHBOARD SCREEN ---
 @Composable
 fun DashboardScreen(
@@ -133,13 +662,12 @@ fun DashboardScreen(
     val transactions by viewModel.allTransactions.collectAsState()
     val currency by viewModel.currency.collectAsState()
     val themeType by viewModel.themeType.collectAsState()
-    val isInitialIncomeSet by viewModel.isInitialIncomeSet.collectAsState()
+    val language by viewModel.language.collectAsState()
+    val smsSyncedBalance by viewModel.smsSyncedBalance.collectAsState()
+    val investments by viewModel.investments.collectAsState()
 
-    if (!isInitialIncomeSet) {
-        SetupInitialIncomeDialog(
-            currencySymbol = currency.symbol,
-            onSave = { amount -> viewModel.addInitialIncome(amount) }
-        )
+    val totalSipAmount = remember(investments) {
+        investments.filter { it.type == "SIP" }.sumOf { it.investedAmount }
     }
     
     val confirmedTx = transactions.filter { it.status == TransactionStatus.CONFIRMED }
@@ -165,6 +693,14 @@ fun DashboardScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        if (smsSyncedBalance != null && totalSipAmount > 0.0 && smsSyncedBalance!! < totalSipAmount) {
+            SipAlertCard(
+                smsSyncedBalance = smsSyncedBalance!!,
+                totalSipAmount = totalSipAmount,
+                currencySymbol = currency.symbol
+            )
+        }
+
         Card(
             shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(containerColor = Color.Transparent),
@@ -186,7 +722,7 @@ fun DashboardScreen(
                     .padding(24.dp)
             ) {
                 Text(
-                    text = "Net Balance",
+                    text = "Net Balance".translate(language),
                     color = Color.White.copy(alpha = 0.7f),
                     style = MaterialTheme.typography.bodyMedium
                 )
@@ -202,14 +738,14 @@ fun DashboardScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column {
-                        Text(text = "Total Credit", color = Color.White.copy(alpha = 0.6f), style = MaterialTheme.typography.bodySmall)
+                        Text(text = "Total Credit".translate(language), color = Color.White.copy(alpha = 0.6f), style = MaterialTheme.typography.bodySmall)
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.ArrowDownward, contentDescription = "Credit", tint = AccentEmerald, modifier = Modifier.size(16.dp))
                             Text(text = "${currency.symbol}${String.format("%,.0f", creditSum)}", color = Color.White, fontWeight = FontWeight.Bold)
                         }
                     }
                     Column {
-                        Text(text = "Total Debit", color = Color.White.copy(alpha = 0.6f), style = MaterialTheme.typography.bodySmall)
+                        Text(text = "Total Debit".translate(language), color = Color.White.copy(alpha = 0.6f), style = MaterialTheme.typography.bodySmall)
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.ArrowUpward, contentDescription = "Debit", tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(16.dp))
                             Text(text = "${currency.symbol}${String.format("%,.0f", debitSum)}", color = Color.White, fontWeight = FontWeight.Bold)
@@ -226,7 +762,7 @@ fun DashboardScreen(
                     .height(200.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text("No confirmed transactions recorded yet.\nGo to Wallet tab or simulate SMS alerts!", textAlign = TextAlign.Center)
+                Text("No confirmed transactions recorded yet.\nGo to Wallet tab or simulate SMS alerts!".translate(language), textAlign = TextAlign.Center)
             }
         } else {
             InteractiveBarChart(
@@ -245,7 +781,7 @@ fun DashboardScreen(
                 ) {
                     Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = "Category Breakdown",
+                            text = "Category Breakdown".translate(language),
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                             modifier = Modifier.align(Alignment.Start).padding(bottom = 16.dp)
                         )
@@ -281,6 +817,7 @@ fun DashboardScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionsScreen(
     viewModel: FinanceViewModel,
@@ -288,15 +825,12 @@ fun TransactionsScreen(
 ) {
     val transactions by viewModel.allTransactions.collectAsState()
     val currency by viewModel.currency.collectAsState()
+    val language by viewModel.language.collectAsState()
+    val lastWalletClearTimestamp by viewModel.lastWalletClearTimestamp.collectAsState()
     
-    val scannedTx by viewModel.scannedTransaction.collectAsState()
-    val showDupWarning by viewModel.showDuplicateWarning.collectAsState()
-    val dupMatchTx by viewModel.duplicateMatchingTransaction.collectAsState()
-
     val context = androidx.compose.ui.platform.LocalContext.current
     val isSmsScanning by viewModel.isSmsScanning.collectAsState()
     val smsSyncedBalance by viewModel.smsSyncedBalance.collectAsState()
-    val isInitialIncomeSet by viewModel.isInitialIncomeSet.collectAsState()
     
     var scanStatusMessage by remember { mutableStateOf<String?>(null) }
     var selectedTxForDetails by remember { mutableStateOf<Transaction?>(null) }
@@ -326,25 +860,20 @@ fun TransactionsScreen(
     var sortBy by remember { mutableStateOf("Date") }
     var sortAscending by remember { mutableStateOf(false) }
     
-    if (!isInitialIncomeSet) {
-        SetupInitialIncomeDialog(
-            currencySymbol = currency.symbol,
-            onSave = { amount -> viewModel.addInitialIncome(amount) }
-        )
+    var showScanChoiceDialog by remember { mutableStateOf(false) }
+    var showVoiceDialog by remember { mutableStateOf(false) }
+    var isFabExpanded by remember { mutableStateOf(false) }
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = androidx.activity.result.contract.ActivityResultContracts.TakePicturePreview()
+    ) { bitmap ->
+        if (bitmap != null) {
+            viewModel.handleRealOcrTrigger(bitmap)
+        }
     }
 
-    if (showDupWarning && scannedTx != null && dupMatchTx != null) {
-        DuplicateWarningDialog(
-            newTx = scannedTx!!,
-            existingTx = dupMatchTx!!,
-            onConfirmAnyway = { viewModel.forceConfirmDuplicate() },
-            onCancel = { viewModel.dismissDuplicateWarning() },
-            currencySymbol = currency.symbol
-        )
-    }
-
-    val filteredTransactions = remember(transactions, searchQuery, selectedStatusFilter, sortBy, sortAscending) {
-        var list = transactions
+    val filteredTransactions = remember(transactions, lastWalletClearTimestamp, searchQuery, selectedStatusFilter, sortBy, sortAscending) {
+        var list = transactions.filter { it.date > lastWalletClearTimestamp }
 
         // 1. Status Filter
         if (selectedStatusFilter != "All") {
@@ -379,287 +908,378 @@ fun TransactionsScreen(
         list
     }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        if (smsSyncedBalance != null) {
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp)
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        Icons.Default.AccountBalanceWallet,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(32.dp)
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column {
-                        Text(
-                            text = "Last Synced Bank Balance",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                        )
-                        Text(
-                            text = "${currency.symbol}${String.format("%,.2f", smsSyncedBalance)}",
-                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-                }
-            }
-        }
-
-        Card(
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
-            modifier = Modifier.padding(bottom = 16.dp)
+    Box(modifier = modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
         ) {
-            Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = "AI Simulators & Tools",
-                    fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.titleSmall
-                )
-                
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+            if (smsSyncedBalance != null) {
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp)
                 ) {
-                    Button(
-                        onClick = { viewModel.handleMockOcrTrigger(OcrScanner.MockReceiptType.STARBUCKS) },
-                        modifier = Modifier.weight(1f),
-                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Icon(Icons.Default.PhotoCamera, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Scan Receipt", fontSize = 11.sp, maxLines = 1)
-                    }
-
-                    Button(
-                        onClick = { viewModel.simulateIncomingSms("Transaction Alert: INR 450.00 spent on HDFC Card ending 1234 at Starbucks Coffee on 13-06-26. Avl Bal Rs. 15,230.00") },
-                        modifier = Modifier.weight(1f),
-                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Icon(Icons.Default.Sms, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Simulate SMS", fontSize = 11.sp, maxLines = 1)
-                    }
-                }
-                
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Button(
-                        onClick = { showManualDialog = true },
-                        modifier = Modifier.weight(1f),
-                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = AccentEmerald),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Add Manual", fontSize = 11.sp, maxLines = 1)
-                    }
-                    
-                    Button(
-                        onClick = {
-                            val permissionCheck = androidx.core.content.ContextCompat.checkSelfPermission(
-                                context,
-                                android.Manifest.permission.READ_SMS
-                            )
-                            if (permissionCheck == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                                viewModel.scanSmsInbox { count, _ ->
-                                    scanStatusMessage = "Scan complete. Synced $count new transactions."
-                                }
-                            } else {
-                                smsPermissionLauncher.launch(android.Manifest.permission.READ_SMS)
-                            }
-                        },
-                        modifier = Modifier.weight(1f),
-                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        if (isSmsScanning) {
-                            CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White, strokeWidth = 2.dp)
-                        } else {
-                            Icon(Icons.Default.Sync, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Scan SMS Inbox", fontSize = 11.sp, maxLines = 1)
-                        }
-                    }
-                }
-            }
-        }
-
-        if (scannedTx != null && !showDupWarning) {
-            Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Scanned Transaction Extracted",
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text("Merchant: ${scannedTx!!.merchant}", style = MaterialTheme.typography.bodyMedium)
-                    Text("Amount: ${currency.symbol}${scannedTx!!.amount}", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
-                    Text("Category: ${scannedTx!!.category}", style = MaterialTheme.typography.bodySmall)
-                    
-                    Spacer(modifier = Modifier.height(12.dp))
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Button(
-                            onClick = { viewModel.confirmScannedTransaction() },
-                            colors = ButtonDefaults.buttonColors(containerColor = AccentEmerald),
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text("Confirm")
-                        }
-                        Button(
-                            onClick = { viewModel.cancelScannedTransaction() },
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text("Cancel")
-                        }
-                        OutlinedButton(
-                            onClick = { viewModel.ignoreScannedTransaction() },
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text("Ignore")
+                        Icon(
+                            Icons.Default.AccountBalanceWallet,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(32.dp)
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column {
+                            Text(
+                                text = "Last Synced Bank Balance".translate(language),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                            )
+                            Text(
+                                text = "${currency.symbol}${String.format("%,.2f", smsSyncedBalance)}",
+                                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
                         }
                     }
                 }
             }
-        }
 
-        OutlinedTextField(
-            value = searchQuery,
-            onValueChange = { searchQuery = it },
-            label = { Text("Search transactions...") },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-            trailingIcon = {
-                if (searchQuery.isNotEmpty()) {
-                    IconButton(onClick = { searchQuery = "" }) {
-                        Icon(Icons.Default.Clear, contentDescription = "Clear")
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                label = { Text("Search transactions...".translate(language)) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { searchQuery = "" }) {
+                            Icon(Icons.Default.Clear, contentDescription = "Clear")
+                        }
                     }
-                }
-            },
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            listOf("All", "Pending", "Confirmed", "Cancelled").forEach { status ->
-                val isSelected = selectedStatusFilter == status
-                FilterChip(
-                    selected = isSelected,
-                    onClick = { selectedStatusFilter = status },
-                    label = { Text(status) },
-                    shape = RoundedCornerShape(8.dp)
-                )
-            }
-        }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Sort by:",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                },
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
             )
+
             Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                listOf("All", "Pending", "Confirmed", "Cancelled").forEach { status ->
+                    val isSelected = selectedStatusFilter == status
+                    FilterChip(
+                        selected = isSelected,
+                        onClick = { selectedStatusFilter = status },
+                        label = { Text(status) },
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                }
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                var showSortMenu by remember { mutableStateOf(false) }
-                Box {
-                    TextButton(onClick = { showSortMenu = true }) {
-                        Text(sortBy)
-                        Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                Text(
+                    text = "Sort by:".translate(language),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    var showSortMenu by remember { mutableStateOf(false) }
+                    Box {
+                        TextButton(onClick = { showSortMenu = true }) {
+                            Text(sortBy.translate(language))
+                            Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                        }
+                        DropdownMenu(
+                            expanded = showSortMenu,
+                            onDismissRequest = { showSortMenu = false }
+                        ) {
+                            listOf("Date", "Amount", "Merchant").forEach { option ->
+                                DropdownMenuItem(
+                                    text = { Text(option.translate(language)) },
+                                    onClick = {
+                                        sortBy = option
+                                        showSortMenu = false
+                                    }
+                                )
+                            }
+                        }
                     }
-                    DropdownMenu(
-                        expanded = showSortMenu,
-                        onDismissRequest = { showSortMenu = false }
-                    ) {
-                        listOf("Date", "Amount", "Merchant").forEach { option ->
-                            DropdownMenuItem(
-                                text = { Text(option) },
-                                onClick = {
-                                    sortBy = option
-                                    showSortMenu = false
+                    IconButton(onClick = { sortAscending = !sortAscending }) {
+                        Icon(
+                            imageVector = if (sortAscending) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
+                            contentDescription = "Sort direction"
+                        )
+                    }
+                }
+            }
+
+            if (filteredTransactions.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No transactions synced yet. Tap Scan SMS Inbox or Simulate SMS!".translate(language))
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(
+                        items = filteredTransactions,
+                        key = { tx -> tx.id }
+                    ) { tx ->
+                        val dismissState = rememberSwipeToDismissBoxState(
+                            confirmValueChange = { value ->
+                                if (value == SwipeToDismissBoxValue.StartToEnd) {
+                                    viewModel.deleteTransaction(tx)
+                                    true
+                                } else {
+                                    false
                                 }
+                            }
+                        )
+
+                        SwipeToDismissBox(
+                            state = dismissState,
+                            enableDismissFromStartToEnd = true,
+                            enableDismissFromEndToStart = false,
+                            backgroundContent = {
+                                val color = if (dismissState.dismissDirection == SwipeToDismissBoxValue.StartToEnd) {
+                                    Color.Red
+                                } else {
+                                    Color.Transparent
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(color, shape = RoundedCornerShape(16.dp))
+                                        .padding(horizontal = 20.dp),
+                                    contentAlignment = Alignment.CenterStart
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = "Delete",
+                                        tint = Color.White
+                                    )
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            TransactionRow(
+                                tx = tx,
+                                currency = currency,
+                                onClick = { selectedTxForDetails = tx },
+                                onConfirm = { viewModel.confirmPendingTransaction(tx.id) },
+                                onReject = { viewModel.cancelPendingTransaction(tx.id) }
                             )
                         }
                     }
                 }
-                IconButton(onClick = { sortAscending = !sortAscending }) {
-                    Icon(
-                        imageVector = if (sortAscending) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
-                        contentDescription = "Sort direction"
-                    )
-                }
             }
         }
 
-        if (filteredTransactions.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                contentAlignment = Alignment.Center
+        // Expandable Speed Dial FAB in bottom-right
+        Column(
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+        ) {
+            AnimatedVisibility(
+                visible = isFabExpanded,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically()
             ) {
-                Text("No transactions synced yet. Tap Scan SMS Inbox or Simulate SMS!")
+                Column(
+                    horizontalAlignment = Alignment.End,
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.padding(bottom = 16.dp)
+                ) {
+                    // Scan Receipt Option
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.clickable { 
+                            isFabExpanded = false
+                            showScanChoiceDialog = true 
+                        }
+                    ) {
+                        Card(
+                            shape = RoundedCornerShape(8.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                        ) {
+                            Text(
+                                text = "Scan Receipt".translate(language),
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                            )
+                        }
+                        FloatingActionButton(
+                            onClick = { 
+                                isFabExpanded = false
+                                showScanChoiceDialog = true 
+                            },
+                            modifier = Modifier.size(48.dp),
+                            containerColor = MaterialTheme.colorScheme.primaryContainer
+                        ) {
+                            Icon(Icons.Default.PhotoCamera, contentDescription = "Scan Receipt", modifier = Modifier.size(24.dp))
+                        }
+                    }
+
+                    // Add Manual Option
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.clickable { 
+                            isFabExpanded = false
+                            showManualDialog = true 
+                        }
+                    ) {
+                        Card(
+                            shape = RoundedCornerShape(8.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                        ) {
+                            Text(
+                                text = "Add Manual".translate(language),
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                            )
+                        }
+                        FloatingActionButton(
+                            onClick = { 
+                                isFabExpanded = false
+                                showManualDialog = true 
+                            },
+                            modifier = Modifier.size(48.dp),
+                            containerColor = AccentEmerald
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = "Add Manual", modifier = Modifier.size(24.dp), tint = Color.White)
+                        }
+                    }
+
+                    // Voice Input Option (Sarvam AI)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.clickable { 
+                            isFabExpanded = false
+                            showVoiceDialog = true 
+                        }
+                    ) {
+                        Card(
+                            shape = RoundedCornerShape(8.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                        ) {
+                            Text(
+                                text = "Voice Input".translate(language),
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                            )
+                        }
+                        FloatingActionButton(
+                            onClick = { 
+                                isFabExpanded = false
+                                showVoiceDialog = true 
+                            },
+                            modifier = Modifier.size(48.dp),
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        ) {
+                            Icon(Icons.Default.Mic, contentDescription = "Voice Input", modifier = Modifier.size(24.dp))
+                        }
+                    }
+                }
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+
+            // Primary Toggle FAB
+            FloatingActionButton(
+                onClick = { isFabExpanded = !isFabExpanded },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = Color.White
             ) {
-                items(filteredTransactions) { tx ->
-                    TransactionRow(
-                        tx = tx,
-                        currency = currency,
-                        onClick = { selectedTxForDetails = tx },
-                        onConfirm = { viewModel.confirmPendingTransaction(tx.id) },
-                        onReject = { viewModel.cancelPendingTransaction(tx.id) }
+                Icon(
+                    imageVector = if (isFabExpanded) Icons.Default.Close else Icons.Default.Add,
+                    contentDescription = "Menu"
+                )
+            }
+        }
+    }
+
+    if (showScanChoiceDialog) {
+        Dialog(onDismissRequest = { showScanChoiceDialog = false }) {
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                modifier = Modifier.fillMaxWidth().padding(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Scan Receipt".translate(language),
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                     )
+                    Text(
+                        text = "Choose scanning method:".translate(language),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Button(
+                        onClick = {
+                            showScanChoiceDialog = false
+                            cameraLauncher.launch(null)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(Icons.Default.PhotoCamera, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Camera Scan".translate(language))
+                    }
+                    Button(
+                        onClick = {
+                            showScanChoiceDialog = false
+                            viewModel.handleMockOcrTrigger(OcrScanner.MockReceiptType.STARBUCKS)
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(Icons.Default.ReceiptLong, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Simulate Mock Receipt".translate(language))
+                    }
+                    OutlinedButton(
+                        onClick = { showScanChoiceDialog = false },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Cancel".translate(language))
+                    }
                 }
             }
         }
@@ -672,6 +1292,24 @@ fun TransactionsScreen(
             onSave = { amount, merchant, isIncome, category ->
                 viewModel.addManualTransaction(amount, merchant, isIncome, category)
                 showManualDialog = false
+            }
+        )
+    }
+
+    if (showVoiceDialog) {
+        VoiceTransactionDialog(
+            language = language,
+            viewModel = viewModel,
+            onDismiss = { showVoiceDialog = false },
+            onSave = { spokenText ->
+                showVoiceDialog = false
+                viewModel.processVoiceTransaction(spokenText) { tx ->
+                    if (tx != null) {
+                        android.widget.Toast.makeText(context, "Voice transaction recorded!".translate(language), android.widget.Toast.LENGTH_SHORT).show()
+                    } else {
+                        android.widget.Toast.makeText(context, "Failed to parse voice command.".translate(language), android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
         )
     }
@@ -1308,19 +1946,100 @@ fun ChatBubble(msg: ChatMessage) {
     }
 }
 
-// --- BUDGET SCREEN ---
+// --- SAFE SPEND SCREEN ---
 @Composable
-fun BudgetScreen(
+fun SafeSpendScreen(
     viewModel: FinanceViewModel,
     modifier: Modifier = Modifier
 ) {
-    val budgets by viewModel.budgets.collectAsState()
-    val currency by viewModel.currency.collectAsState()
+    val rentAmount by viewModel.rentAmount.collectAsState()
+    val emiAmount by viewModel.emiAmount.collectAsState()
+    val emiDay by viewModel.emiDay.collectAsState()
+    val sipAmount by viewModel.sipAmount.collectAsState()
+    val sipDay by viewModel.sipDay.collectAsState()
+    val otherMandatory by viewModel.otherMandatory.collectAsState()
     
-    var showAiForecast by remember { mutableStateOf(false) }
-    var aiForecastResult by remember { mutableStateOf("") }
-    var isThinkingForecast by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
+    val currency by viewModel.currency.collectAsState()
+    val language by viewModel.language.collectAsState()
+    val transactions by viewModel.allTransactions.collectAsState()
+    val smsSyncedBalance by viewModel.smsSyncedBalance.collectAsState()
+
+    var isSetupExpanded by remember { mutableStateOf(false) }
+
+    var editRent by remember(rentAmount) { mutableStateOf(if (rentAmount > 0.0) rentAmount.toInt().toString() else "") }
+    var editEmi by remember(emiAmount) { mutableStateOf(if (emiAmount > 0.0) emiAmount.toInt().toString() else "") }
+    var editEmiDay by remember(emiDay) { mutableStateOf(emiDay.toString()) }
+    var editSip by remember(sipAmount) { mutableStateOf(if (sipAmount > 0.0) sipAmount.toInt().toString() else "") }
+    var editSipDay by remember(sipDay) { mutableStateOf(sipDay.toString()) }
+    var editOther by remember(otherMandatory) { mutableStateOf(if (otherMandatory > 0.0) otherMandatory.toInt().toString() else "") }
+
+    val calendar = remember(transactions) { java.util.Calendar.getInstance() }
+    val currentMonth = calendar.get(java.util.Calendar.MONTH)
+    val currentYear = calendar.get(java.util.Calendar.YEAR)
+    val todayDay = calendar.get(java.util.Calendar.DAY_OF_MONTH)
+    val totalDaysInMonth = calendar.getActualMaximum(java.util.Calendar.DAY_OF_MONTH)
+    val daysRemaining = totalDaysInMonth - todayDay + 1
+
+    val confirmedTx = remember(transactions) {
+        transactions.filter { it.status == TransactionStatus.CONFIRMED }
+    }
+
+    val calculatedIncome = remember(transactions) {
+        val monthCredits = confirmedTx.filter { 
+            if (it.isIncome) {
+                val txCal = java.util.Calendar.getInstance().apply { timeInMillis = it.date }
+                txCal.get(java.util.Calendar.MONTH) == currentMonth &&
+                txCal.get(java.util.Calendar.YEAR) == currentYear
+            } else {
+                false
+            }
+        }.sumOf { it.amount }
+        if (monthCredits > 0.0) monthCredits else 65000.0
+    }
+    val totalIncome = calculatedIncome
+
+    val totalCommitments = rentAmount + emiAmount + sipAmount + otherMandatory
+    val disposableIncome = (totalIncome - totalCommitments).coerceAtLeast(0.0)
+
+    val variableSpent = remember(transactions) {
+        confirmedTx.filter { 
+            if (!it.isIncome) {
+                val txCal = java.util.Calendar.getInstance().apply { timeInMillis = it.date }
+                txCal.get(java.util.Calendar.MONTH) == currentMonth &&
+                txCal.get(java.util.Calendar.YEAR) == currentYear
+            } else {
+                false
+            }
+        }.sumOf { it.amount }
+    }
+
+    val safeSpendRemaining = (disposableIncome - variableSpent).coerceAtLeast(0.0)
+    val safeDailyLimit = if (daysRemaining > 0) safeSpendRemaining / daysRemaining else safeSpendRemaining
+
+    val walletBalance = remember(transactions) {
+        val confirmed = transactions.filter { it.status == TransactionStatus.CONFIRMED }
+        confirmed.filter { it.isIncome }.sumOf { it.amount } - confirmed.filter { !it.isIncome }.sumOf { it.amount }
+    }
+    val currentBalance = smsSyncedBalance ?: walletBalance
+
+    fun isDueSoon(targetDay: Int, currentDay: Int, maxDays: Int): Boolean {
+        if (targetDay >= currentDay) {
+            return (targetDay - currentDay) in 0..3
+        }
+        return (targetDay + maxDays - currentDay) in 0..3
+    }
+    val isEmiAlert = emiAmount > 0.0 && isDueSoon(emiDay, todayDay, totalDaysInMonth) && currentBalance < emiAmount
+    val isSipAlert = sipAmount > 0.0 && isDueSoon(sipDay, todayDay, totalDaysInMonth) && currentBalance < sipAmount
+
+    val categorySpentPcts = remember(transactions, totalIncome) {
+        confirmedTx.filter { !it.isIncome }
+            .groupBy { it.category }
+            .map { (cat, list) ->
+                val sum = list.sumOf { it.amount }
+                val pct = if (totalIncome > 0.0) (sum / totalIncome) * 100.0 else 0.0
+                cat to pct
+            }.sortedByDescending { it.second }
+    }
 
     Column(
         modifier = modifier
@@ -1329,115 +2048,258 @@ fun BudgetScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Card(
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+        if (isEmiAlert) {
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.3f)),
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(Icons.Rounded.AutoAwesome, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                    Text("AI Budget Overrun Predictor", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("Analyze daily spending patterns and forecast monthly limit overruns instantly.", style = MaterialTheme.typography.bodyMedium)
-                Spacer(modifier = Modifier.height(12.dp))
-                
-                Button(
-                    onClick = {
-                        isThinkingForecast = true
-                        scope.launch {
-                            delay(1500)
-                            isThinkingForecast = false
-                            val txs = viewModel.allTransactions.value
-                            aiForecastResult = AiAssistantService.askAssistant(
-                                query = "forecast budget overruns",
-                                transactions = txs,
-                                budgets = budgets,
-                                goals = emptyList(),
-                                investments = emptyList(),
-                                apiKey = null,
-                                currencySymbol = currency.symbol
-                            )
-                            showAiForecast = true
-                        }
-                    },
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    if (isThinkingForecast) {
-                        CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = Color.White)
-                    } else {
-                        Text("Calculate AI Projection")
-                    }
-                }
-                
-                if (showAiForecast) {
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = aiForecastResult,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier
-                            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(8.dp))
-                            .padding(12.dp)
+                    Icon(
+                        Icons.Rounded.Warning,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(32.dp)
                     )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column {
+                        Text(
+                            text = "Low Balance Alert: EMI".translate(language),
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                        Text(
+                            text = "Your balance (${currency.symbol}${String.format("%.2f", currentBalance)}) is below your upcoming EMI of ${currency.symbol}${String.format("%.2f", emiAmount)} due on day ${emiDay}.".translate(language),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.8f)
+                        )
+                    }
                 }
             }
         }
 
-        Text("Active Budgets", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
-
-        if (budgets.isEmpty()) {
-            Text("No budgets found. Please add budgets.")
-        } else {
-            budgets.forEach { budget ->
-                val progress = if (budget.limitAmount > 0) (budget.spentAmount / budget.limitAmount).toFloat() else 0f
-                val isOverspent = budget.spentAmount > budget.limitAmount
-                val catName = TransactionCategory.values().find { it.name == budget.category }?.displayName ?: if (budget.category == "All") "Master Budget" else budget.category
-
-                Card(
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+        if (isSipAlert) {
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.3f)),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Row(
+                    Icon(
+                        Icons.Rounded.Warning,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(32.dp)
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column {
+                        Text(
+                            text = "Low Balance Alert: SIP".translate(language),
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                        Text(
+                            text = "Your balance (${currency.symbol}${String.format("%.2f", currentBalance)}) is below your upcoming SIP of ${currency.symbol}${String.format("%.2f", sipAmount)} due on day ${sipDay}.".translate(language),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.8f)
+                        )
+                    }
+                }
+            }
+        }
+
+        // Safe Spend main display
+        Card(
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Safe Spend Remaining".translate(language),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "${currency.symbol}${String.format("%,.2f", safeSpendRemaining)}",
+                    style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("Income".translate(language), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f))
+                        Text("${currency.symbol}${totalIncome.toInt()}", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.onPrimaryContainer)
+                    }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("Bills/Commitments".translate(language), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f))
+                        Text("${currency.symbol}${totalCommitments.toInt()}", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.onPrimaryContainer)
+                    }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("Daily Safe Limit".translate(language), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f))
+                        Text("${currency.symbol}${safeDailyLimit.toInt()}", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.onPrimaryContainer)
+                    }
+                }
+            }
+        }
+
+        // Commitments expander setup
+        Card(
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { isSetupExpanded = !isSetupExpanded },
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Icon(Icons.Rounded.Settings, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        Text(
+                            text = "Financial Setup & Commitments".translate(language),
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                    Icon(
+                        imageVector = if (isSetupExpanded) Icons.Rounded.KeyboardArrowUp else Icons.Rounded.KeyboardArrowDown,
+                        contentDescription = "Expand/Collapse"
+                    )
+                }
+
+                if (isSetupExpanded) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+
+                        OutlinedTextField(
+                            value = editRent,
+                            onValueChange = { editRent = it },
+                            label = { Text("Monthly Rent (₹)".translate(language)) },
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(text = catName, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge)
-                            Text(
-                                text = "${currency.symbol}${budget.spentAmount.toInt()} / ${currency.symbol}${budget.limitAmount.toInt()}",
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.SemiBold
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedTextField(
+                                value = editEmi,
+                                onValueChange = { editEmi = it },
+                                label = { Text("EMI Amount (₹)".translate(language)) },
+                                modifier = Modifier.weight(1f),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            OutlinedTextField(
+                                value = editEmiDay,
+                                onValueChange = { editEmiDay = it },
+                                label = { Text("EMI Due Day (1-31)".translate(language)) },
+                                modifier = Modifier.weight(1f),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                shape = RoundedCornerShape(12.dp)
                             )
                         }
-                        
-                        Spacer(modifier = Modifier.height(12.dp))
-                        
-                        LinearProgressIndicator(
-                            progress = progress.coerceAtMost(1f),
-                            color = if (isOverspent) MaterialTheme.colorScheme.error else if (progress > 0.8f) AccentOrange else MaterialTheme.colorScheme.primary,
-                            trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(8.dp)
-                                .clip(CircleShape)
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedTextField(
+                                value = editSip,
+                                onValueChange = { editSip = it },
+                                label = { Text("SIP Amount (₹)".translate(language)) },
+                                modifier = Modifier.weight(1f),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            OutlinedTextField(
+                                value = editSipDay,
+                                onValueChange = { editSipDay = it },
+                                label = { Text("SIP Due Day (1-31)".translate(language)) },
+                                modifier = Modifier.weight(1f),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                        }
+                        OutlinedTextField(
+                            value = editOther,
+                            onValueChange = { editOther = it },
+                            label = { Text("Other Mandatory Bills (₹)".translate(language)) },
+                            modifier = Modifier.fillMaxWidth(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            shape = RoundedCornerShape(12.dp)
                         )
-                        
-                        if (isOverspent) {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                Icon(Icons.Default.Error, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(16.dp))
-                                Text(
-                                    text = "Budget overrun by ${currency.symbol}${(budget.spentAmount - budget.limitAmount).toInt()}!",
-                                    color = MaterialTheme.colorScheme.error,
-                                    style = MaterialTheme.typography.bodySmall
-                                )
+                        Button(
+                            onClick = {
+                                viewModel.updateRentAmount(editRent.toDoubleOrNull() ?: 0.0)
+                                viewModel.updateEmiAmount(editEmi.toDoubleOrNull() ?: 0.0)
+                                viewModel.updateEmiDay(editEmiDay.toIntOrNull() ?: 1)
+                                viewModel.updateSipAmount(editSip.toDoubleOrNull() ?: 0.0)
+                                viewModel.updateSipDay(editSipDay.toIntOrNull() ?: 1)
+                                viewModel.updateOtherMandatory(editOther.toDoubleOrNull() ?: 0.0)
+                                isSetupExpanded = false
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text("Save Financial Setup".translate(language))
+                        }
+                    }
+                }
+            }
+        }
+
+        // Domain Analysis display
+        Text("Domain Spend Percentage".translate(language), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+
+        if (categorySpentPcts.isEmpty()) {
+            Text("No variable expense records found for this month.".translate(language), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        } else {
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    categorySpentPcts.forEach { (cat, pct) ->
+                        val catDisplayName = TransactionCategory.values().find { it.name == cat }?.displayName ?: cat
+                        Column {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(catDisplayName, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                                Text(String.format("%.1f%%", pct), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
+                            Spacer(modifier = Modifier.height(4.dp))
+                            LinearProgressIndicator(
+                                progress = (pct / 100.0).toFloat().coerceIn(0f, 1f),
+                                color = getCategoryColor(cat),
+                                trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(6.dp)
+                                    .clip(CircleShape)
+                            )
                         }
                     }
                 }
@@ -1918,10 +2780,13 @@ fun SettingsScreen(
     val currency by viewModel.currency.collectAsState()
     val language by viewModel.language.collectAsState()
     val isInvestmentsEnabled by viewModel.isInvestmentsEnabled.collectAsState()
-
+    val sarvamKey by viewModel.sarvamKey.collectAsState()
+    val geminiApiKey by viewModel.geminiApiKey.collectAsState()
+    val context = androidx.compose.ui.platform.LocalContext.current
+ 
     var showPinSetDialog by remember { mutableStateOf(false) }
     val isPinSet by viewModel.isPinSet.collectAsState()
-
+ 
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -1929,7 +2794,7 @@ fun SettingsScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text("Visual Themes", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+        Text("Visual Themes".translate(language), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
         
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -1955,11 +2820,11 @@ fun SettingsScreen(
                         Box(modifier = Modifier.size(16.dp).background(DynamicLightSecondary, CircleShape))
                         Box(modifier = Modifier.size(16.dp).background(DynamicLightTertiary, CircleShape))
                     }
-                    Text("Dynamic Theme", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
-                    Text("Vibrant gradients, rounded cards & playful transitions.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                    Text("Dynamic Theme".translate(language), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
+                    Text("Vibrant gradients, rounded cards & playful transitions.".translate(language), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                 }
             }
-
+ 
             Card(
                 shape = RoundedCornerShape(16.dp),
                 border = BorderStroke(
@@ -1980,13 +2845,13 @@ fun SettingsScreen(
                         Box(modifier = Modifier.size(16.dp).background(ProfLightSecondary, CircleShape))
                         Box(modifier = Modifier.size(16.dp).background(ProfLightTertiary, CircleShape))
                     }
-                    Text("Professional Theme", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
-                    Text("Elegant borders, dark charcoal & executive dashboard designs.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                    Text("Professional Theme".translate(language), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
+                    Text("Elegant borders, dark charcoal & executive dashboard designs.".translate(language), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                 }
             }
         }
-
-        Text("Accent Color", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold))
+ 
+        Text("Accent Color".translate(language), style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold))
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceAround
@@ -2009,10 +2874,10 @@ fun SettingsScreen(
                 )
             }
         }
-
+ 
         Divider()
-
-        Text("Display Mode", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+ 
+        Text("Display Mode".translate(language), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -2020,31 +2885,31 @@ fun SettingsScreen(
             FilterChip(
                 selected = isDark == null,
                 onClick = { viewModel.updateDarkMode(null) },
-                label = { Text("System Theme") }
+                label = { Text("System Theme".translate(language)) }
             )
             FilterChip(
                 selected = isDark == false,
                 onClick = { viewModel.updateDarkMode(false) },
-                label = { Text("Light Mode") }
+                label = { Text("Light Mode".translate(language)) }
             )
             FilterChip(
                 selected = isDark == true,
                 onClick = { viewModel.updateDarkMode(true) },
-                label = { Text("Dark Mode") }
+                label = { Text("Dark Mode".translate(language)) }
             )
         }
-
+ 
         Divider()
-
-        Text("Security Gates", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+ 
+        Text("Security Gates".translate(language), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text("Lock App with PIN", fontWeight = FontWeight.Bold)
-                Text("Secure local wallet with secure PIN keyboard", style = MaterialTheme.typography.bodySmall)
+                Text("Lock App with PIN".translate(language), fontWeight = FontWeight.Bold)
+                Text("Secure local wallet with secure PIN keyboard".translate(language), style = MaterialTheme.typography.bodySmall)
             }
             Switch(
                 checked = isPinSet,
@@ -2057,33 +2922,17 @@ fun SettingsScreen(
                 }
             )
         }
-
+ 
         Divider()
-
-        Text("Localization", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+ 
+        Text("Localization".translate(language), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+ 
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Preferred Currency", fontWeight = FontWeight.Bold)
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                CurrencyType.values().forEach { cur ->
-                    FilterChip(
-                        selected = currency == cur,
-                        onClick = { viewModel.updateCurrency(cur) },
-                        label = { Text("${cur.symbol} (${cur.code})") }
-                    )
-                }
-            }
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("Language", fontWeight = FontWeight.Bold)
+            Text("Language".translate(language), fontWeight = FontWeight.Bold)
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 LanguageType.values().forEach { lang ->
                     FilterChip(
@@ -2094,22 +2943,108 @@ fun SettingsScreen(
                 }
             }
         }
-
+ 
         Divider()
-
+ 
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text("Enable Investments Module", fontWeight = FontWeight.Bold)
+                Text("Enable Investments Module".translate(language), fontWeight = FontWeight.Bold)
                 Text("SIPs, mutual funds watchlists, allocation charts", style = MaterialTheme.typography.bodySmall)
             }
             Switch(
                 checked = isInvestmentsEnabled,
                 onCheckedChange = { viewModel.updateInvestmentsEnabled(it) }
             )
+        }
+
+        Divider()
+
+        Text("AI Configuration".translate(language), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+        
+        var tempGeminiKey by remember(geminiApiKey) { mutableStateOf(geminiApiKey) }
+        var tempSarvamKey by remember(sarvamKey) { mutableStateOf(sarvamKey) }
+        var isGeminiKeyVisible by remember { mutableStateOf(false) }
+        var isSarvamKeyVisible by remember { mutableStateOf(false) }
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            OutlinedTextField(
+                value = tempGeminiKey,
+                onValueChange = { tempGeminiKey = it },
+                label = { Text("Gemini API Key".translate(language)) },
+                visualTransformation = if (isGeminiKeyVisible) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                trailingIcon = {
+                    IconButton(onClick = { isGeminiKeyVisible = !isGeminiKeyVisible }) {
+                        Icon(
+                            imageVector = if (isGeminiKeyVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                            contentDescription = "Toggle Visibility"
+                        )
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp)
+            )
+
+            OutlinedTextField(
+                value = tempSarvamKey,
+                onValueChange = { tempSarvamKey = it },
+                label = { Text("Sarvam AI Subscription Key".translate(language)) },
+                visualTransformation = if (isSarvamKeyVisible) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                trailingIcon = {
+                    IconButton(onClick = { isSarvamKeyVisible = !isSarvamKeyVisible }) {
+                        Icon(
+                            imageVector = if (isSarvamKeyVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                            contentDescription = "Toggle Visibility"
+                        )
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp)
+            )
+
+            Button(
+                onClick = {
+                    viewModel.updateGeminiApiKey(tempGeminiKey)
+                    viewModel.updateSarvamKey(tempSarvamKey)
+                    android.widget.Toast.makeText(context, "API Keys updated successfully!".translate(language), android.widget.Toast.LENGTH_SHORT).show()
+                },
+                modifier = Modifier.align(Alignment.End),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("Save Keys".translate(language))
+            }
+        }
+
+        Divider()
+
+        Text("Maintenance & Reset".translate(language), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+                Text("Clear Wallet Transactions".translate(language), fontWeight = FontWeight.Bold)
+                Text("Hides transactions from wallet view. Preserves data for charts and calculators.".translate(language), style = MaterialTheme.typography.bodySmall)
+            }
+            OutlinedButton(
+                onClick = {
+                    viewModel.clearTransactionsFromWallet()
+                    android.widget.Toast.makeText(context, "Wallet transactions cleared!".translate(language), android.widget.Toast.LENGTH_SHORT).show()
+                },
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("Clear Wallet".translate(language))
+            }
         }
     }
 
@@ -2213,6 +3148,638 @@ fun FlowRow(
                     x += placeable.width + spacingPx
                 }
                 y += lineHeight + crossSpacingPx
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ToolCard(
+    title: String,
+    subtitle: String,
+    icon: ImageVector,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
+) {
+    Card(
+        onClick = if (enabled) onClick else ({}),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (enabled) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.1f)
+        ),
+        border = BorderStroke(
+            1.dp,
+            if (enabled) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)
+        ),
+        modifier = modifier
+            .fillMaxWidth()
+            .height(135.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Icon(
+                icon,
+                contentDescription = title,
+                tint = if (enabled) MaterialTheme.colorScheme.primary else Color.Gray,
+                modifier = Modifier.size(36.dp)
+            )
+            Column {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = if (enabled) MaterialTheme.colorScheme.onSurface else Color.Gray
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (enabled) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f) else Color.Gray.copy(alpha = 0.6f),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+    }
+}
+
+// --- FINANCIAL TOOLS SCREEN ---
+@Composable
+fun FinancialToolsScreen(
+    viewModel: FinanceViewModel,
+    modifier: Modifier = Modifier
+) {
+    var activeTool by remember { mutableStateOf<String?>(null) }
+    val isInvestmentsEnabled by viewModel.isInvestmentsEnabled.collectAsState()
+    
+    val investments by viewModel.investments.collectAsState()
+    val currency by viewModel.currency.collectAsState()
+    val smsSyncedBalance by viewModel.smsSyncedBalance.collectAsState()
+
+    val emiAmount by viewModel.emiAmount.collectAsState()
+    val emiDay by viewModel.emiDay.collectAsState()
+    val sipAmount by viewModel.sipAmount.collectAsState()
+    val sipDay by viewModel.sipDay.collectAsState()
+    val language by viewModel.language.collectAsState()
+
+    // Get current calendar info
+    val calendar = remember { java.util.Calendar.getInstance() }
+    val todayDay = calendar.get(java.util.Calendar.DAY_OF_MONTH)
+    val maxDays = calendar.getActualMaximum(java.util.Calendar.DAY_OF_MONTH)
+
+    val transactions by viewModel.allTransactions.collectAsState()
+    val walletBalance = remember(transactions) {
+        val confirmed = transactions.filter { it.status == TransactionStatus.CONFIRMED }
+        confirmed.filter { it.isIncome }.sumOf { it.amount } - confirmed.filter { !it.isIncome }.sumOf { it.amount }
+    }
+    val currentBalance = smsSyncedBalance ?: walletBalance
+    
+    val totalSipAmount = remember(investments) {
+        investments.filter { it.type == "SIP" }.sumOf { it.investedAmount }
+    }
+
+    // Helper to check if date is within 3 days
+    fun isDueSoon(targetDay: Int, currentDay: Int, maxDays: Int): Boolean {
+        if (targetDay >= currentDay) {
+            return (targetDay - currentDay) in 0..3
+        }
+        return (targetDay + maxDays - currentDay) in 0..3
+    }
+
+    val isEmiAlert = emiAmount > 0.0 && isDueSoon(emiDay, todayDay, maxDays) && currentBalance < emiAmount
+    val isSipAlert = sipAmount > 0.0 && isDueSoon(sipDay, todayDay, maxDays) && currentBalance < sipAmount
+
+    if (activeTool == null) {
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                "Financial Tools".translate(language),
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
+            if (isEmiAlert) {
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.3f)),
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Rounded.Warning,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(32.dp)
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column {
+                            Text(
+                                text = "Low Balance Alert: EMI".translate(language),
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                            Text(
+                                text = "Your balance (${currency.symbol}${String.format("%.2f", currentBalance)}) is below your upcoming EMI of ${currency.symbol}${String.format("%.2f", emiAmount)} due on day ${emiDay}.".translate(language),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.8f)
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (isSipAlert) {
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.3f)),
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Rounded.Warning,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(32.dp)
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column {
+                            Text(
+                                text = "Low Balance Alert: SIP".translate(language),
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                            Text(
+                                text = "Your balance (${currency.symbol}${String.format("%.2f", currentBalance)}) is below your upcoming SIP of ${currency.symbol}${String.format("%.2f", sipAmount)} due on day ${sipDay}.".translate(language),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.8f)
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (smsSyncedBalance != null && totalSipAmount > 0.0 && smsSyncedBalance!! < totalSipAmount && !isSipAlert) {
+                SipAlertCard(
+                    smsSyncedBalance = smsSyncedBalance!!,
+                    totalSipAmount = totalSipAmount,
+                    currencySymbol = currency.symbol,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+
+            // Grid Layout (2 columns per row)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                ToolCard(
+                    title = "Safe Spend",
+                    subtitle = "Analyze spent %, commit bills & save",
+                    icon = Icons.Rounded.AccountBalance,
+                    onClick = { activeTool = "Safe Spend" },
+                    modifier = Modifier.weight(1f)
+                )
+                ToolCard(
+                    title = "Savings Goals",
+                    subtitle = "Track contributions and streaks",
+                    icon = Icons.Rounded.Flag,
+                    onClick = { activeTool = "Goals" },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                ToolCard(
+                    title = "Splitwise",
+                    subtitle = "Split bills and settle balances",
+                    icon = Icons.Rounded.Group,
+                    onClick = { activeTool = "Splitwise" },
+                    modifier = Modifier.weight(1f)
+                )
+                if (isInvestmentsEnabled) {
+                    ToolCard(
+                        title = "Investments",
+                        subtitle = "Mutual funds, stocks & SIP tracker",
+                        icon = Icons.Rounded.TrendingUp,
+                        onClick = { activeTool = "Investments" },
+                        modifier = Modifier.weight(1f)
+                    )
+                } else {
+                    ToolCard(
+                        title = "Investments (Locked)",
+                        subtitle = "Enable in settings to track stocks & SIPs",
+                        icon = Icons.Rounded.Lock,
+                        onClick = {},
+                        enabled = false,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+        }
+    } else {
+        Column(
+            modifier = modifier.fillMaxSize()
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = { activeTool = null }) {
+                    Icon(Icons.Rounded.ArrowBack, contentDescription = "Back")
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = when (activeTool) {
+                        "Safe Spend" -> "Safe Spend".translate(language)
+                        "Goals" -> "Savings Goals".translate(language)
+                        "Investments" -> "Investment Portfolio".translate(language)
+                        "Splitwise" -> "Splitwise".translate(language)
+                        else -> ""
+                    },
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                )
+            }
+            
+            Box(modifier = Modifier.weight(1f)) {
+                when (activeTool) {
+                    "Safe Spend" -> SafeSpendScreen(viewModel = viewModel)
+                    "Goals" -> GoalsScreen(viewModel = viewModel)
+                    "Investments" -> InvestmentsScreen(viewModel = viewModel)
+                    "Splitwise" -> SplitwiseScreen(viewModel = viewModel)
+                }
+            }
+        }
+    }
+}
+
+// --- SPLITWISE SCREEN ---
+@Composable
+fun SplitwiseScreen(
+    viewModel: FinanceViewModel,
+    modifier: Modifier = Modifier
+) {
+    val splits by viewModel.allSplits.collectAsState()
+    val transactions by viewModel.allTransactions.collectAsState()
+    val currency by viewModel.currency.collectAsState()
+    val themeType by viewModel.themeType.collectAsState()
+    
+    val mockContacts = remember { listOf("Alice", "Bob", "Charlie", "Dave", "Eve") }
+    var showSplitDialog by remember { mutableStateOf(false) }
+    
+    val unsettledSplits = splits.filter { !it.isSettled }
+    val totalOwed = unsettledSplits.sumOf { it.shareAmount }
+    
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Balance Owed Card
+        val cardBrush = if (themeType == ThemeType.DYNAMIC) {
+            Brush.horizontalGradient(
+                colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary)
+            )
+        } else {
+            Brush.horizontalGradient(
+                colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.surfaceVariant)
+            )
+        }
+        
+        Card(
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Box(
+                modifier = Modifier
+                    .background(cardBrush)
+                    .padding(24.dp)
+            ) {
+                Column {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            Icons.Rounded.Group,
+                            contentDescription = "Splitwise",
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(28.dp)
+                        )
+                        Text(
+                            "Splitwise Balances",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        "Total You Are Owed",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
+                    )
+                    Text(
+                        "${currency.symbol}${String.format("%,.2f", totalOwed)}",
+                        style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+            }
+        }
+        
+        Button(
+            onClick = { showSplitDialog = true },
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Icon(Icons.Default.Add, contentDescription = null)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Split a Transaction", fontWeight = FontWeight.Bold)
+        }
+        
+        Text("Split History", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+        
+        if (splits.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxWidth().height(150.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    "No split transactions yet.\nClick above to split your first bill!",
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                )
+            }
+        } else {
+            splits.forEach { split ->
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = split.transactionMerchant,
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
+                            )
+                            Text(
+                                text = "Paid: ${currency.symbol}${split.transactionAmount}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "${split.contactName} owes you ${currency.symbol}${String.format("%.2f", split.shareAmount)}",
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                color = if (split.isSettled) Color.Gray else MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        
+                        if (split.isSettled) {
+                            Text(
+                                text = "Settled",
+                                color = Color.Gray,
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                            )
+                        } else {
+                            Button(
+                                onClick = { viewModel.settleSplit(split.id) },
+                                shape = RoundedCornerShape(8.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            ) {
+                                Text("Settle Up", fontSize = 12.sp)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    if (showSplitDialog) {
+        SplitTransactionDialog(
+            transactions = transactions.filter { !it.isIncome && it.status == TransactionStatus.CONFIRMED },
+            mockContacts = mockContacts,
+            currencySymbol = currency.symbol,
+            onDismiss = { showSplitDialog = false },
+            onConfirmSplit = { transaction, contacts ->
+                viewModel.splitTransaction(transaction, contacts)
+                showSplitDialog = false
+            }
+        )
+    }
+}
+
+@Composable
+fun SplitTransactionDialog(
+    transactions: List<Transaction>,
+    mockContacts: List<String>,
+    currencySymbol: String,
+    onDismiss: () -> Unit,
+    onConfirmSplit: (Transaction, List<String>) -> Unit
+) {
+    var selectedTx by remember { mutableStateOf<Transaction?>(null) }
+    var selectedContacts by remember { mutableStateOf(setOf<String>()) }
+    
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 500.dp)
+                .padding(16.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp)
+            ) {
+                Text(
+                    text = "Split a Bill",
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                if (selectedTx == null) {
+                    Text("Select a transaction:", style = MaterialTheme.typography.titleSmall)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    if (transactions.isEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().height(100.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("No recent expenses to split.")
+                        }
+                    } else {
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .verticalScroll(rememberScrollState())
+                        ) {
+                            transactions.forEach { tx ->
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp)
+                                        .clickable { selectedTx = tx },
+                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(12.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Column {
+                                            Text(tx.merchant, fontWeight = FontWeight.SemiBold)
+                                            Text(tx.category, style = MaterialTheme.typography.bodySmall)
+                                        }
+                                        Text(
+                                            "${currencySymbol}${tx.amount}",
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.error
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        TextButton(onClick = onDismiss) {
+                            Text("Cancel")
+                        }
+                    }
+                } else {
+                    val tx = selectedTx!!
+                    Text(
+                        "Split ${tx.merchant} (${currencySymbol}${tx.amount})",
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    Text("Select friends to split with:", style = MaterialTheme.typography.titleSmall)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        mockContacts.forEach { contact ->
+                            val isChecked = selectedContacts.contains(contact)
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        selectedContacts = if (isChecked) {
+                                            selectedContacts - contact
+                                        } else {
+                                            selectedContacts + contact
+                                        }
+                                    }
+                                    .padding(vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Checkbox(
+                                    checked = isChecked,
+                                    onCheckedChange = { checked ->
+                                        selectedContacts = if (checked) {
+                                            selectedContacts + contact
+                                        } else {
+                                            selectedContacts - contact
+                                        }
+                                    }
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(contact, style = MaterialTheme.typography.bodyMedium)
+                            }
+                        }
+                    }
+                    
+                    if (selectedContacts.isNotEmpty()) {
+                        val totalPeople = selectedContacts.size + 1
+                        val share = tx.amount / totalPeople
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Text(
+                                    "Split: You + ${selectedContacts.size} friends",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Text(
+                                    "Each share: $currencySymbol${String.format("%,.2f", share)}",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        TextButton(onClick = { selectedTx = null; selectedContacts = emptySet() }) {
+                            Text("Back")
+                        }
+                        Row {
+                            TextButton(onClick = onDismiss) {
+                                Text("Cancel")
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Button(
+                                onClick = { onConfirmSplit(tx, selectedContacts.toList()) },
+                                enabled = selectedContacts.isNotEmpty()
+                            ) {
+                                Text("Split")
+                            }
+                        }
+                    }
+                }
             }
         }
     }

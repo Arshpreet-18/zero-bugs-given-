@@ -8,6 +8,7 @@ import com.example.antigravityfinance.data.model.Investment
 import com.example.antigravityfinance.data.model.SavingsGoal
 import com.example.antigravityfinance.data.model.Transaction
 import com.example.antigravityfinance.data.model.TransactionStatus
+import com.example.antigravityfinance.data.model.SplitShare
 
 @Entity(tableName = "transactions")
 data class TransactionEntity(
@@ -160,3 +161,40 @@ data class RecurringMerchantEntity(
     val frequencyCount: Int = 1,
     val lastConfirmedAmount: Double = 0.0
 )
+
+@Entity(tableName = "splits")
+data class SplitEntity(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val transactionId: Int,
+    val transactionAmount: Double,
+    val transactionMerchant: String,
+    val transactionDate: Long,
+    val contactName: String,
+    val shareAmount: Double,
+    val isSettled: Boolean = false
+) {
+    fun toDomain(): SplitShare = SplitShare(
+        id = id,
+        transactionId = transactionId,
+        transactionAmount = transactionAmount,
+        transactionMerchant = transactionMerchant,
+        transactionDate = transactionDate,
+        contactName = contactName,
+        shareAmount = shareAmount,
+        isSettled = isSettled
+    )
+
+    companion object {
+        fun fromDomain(domain: SplitShare): SplitEntity = SplitEntity(
+            id = domain.id,
+            transactionId = domain.transactionId,
+            transactionAmount = domain.transactionAmount,
+            transactionMerchant = domain.transactionMerchant,
+            transactionDate = domain.transactionDate,
+            contactName = domain.contactName,
+            shareAmount = domain.shareAmount,
+            isSettled = domain.isSettled
+        )
+    }
+}
+

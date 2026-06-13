@@ -89,3 +89,22 @@ interface RecurringMerchantDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(recurringMerchant: RecurringMerchantEntity): Unit
 }
+
+@Dao
+interface SplitDao {
+    @Query("SELECT * FROM splits ORDER BY transactionDate DESC")
+    fun getAllSplits(): Flow<List<SplitEntity>>
+
+    @Query("SELECT * FROM splits WHERE id = :id LIMIT 1")
+    suspend fun getSplitById(id: Int): SplitEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(split: SplitEntity): Long
+
+    @Update
+    suspend fun update(split: SplitEntity): Unit
+
+    @Delete
+    suspend fun delete(split: SplitEntity): Unit
+}
+

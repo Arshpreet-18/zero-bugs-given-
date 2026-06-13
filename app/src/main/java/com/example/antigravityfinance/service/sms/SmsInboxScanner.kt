@@ -64,7 +64,7 @@ object SmsInboxScanner {
                         val transaction = parsedResult.transaction.copy(
                             date = date,
                             notes = "Synced from SMS Inbox (${address})",
-                            status = TransactionStatus.PENDING
+                            status = TransactionStatus.CONFIRMED
                         )
                         parsedSmsList.add(transaction)
                         
@@ -100,7 +100,7 @@ object SmsInboxScanner {
             if (!exists) {
                 kotlinx.coroutines.runBlocking {
                     val isAutoConfirm = repository.isMerchantAutoConfirm(smsTx.merchant)
-                    val finalStatus = if (isAutoConfirm) TransactionStatus.CONFIRMED else TransactionStatus.PENDING
+                    val finalStatus = TransactionStatus.CONFIRMED
                     repository.insertTransaction(smsTx.copy(status = finalStatus))
                 }
                 addedCount++
