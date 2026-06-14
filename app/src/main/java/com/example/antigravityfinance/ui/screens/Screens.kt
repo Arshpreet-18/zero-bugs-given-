@@ -71,6 +71,8 @@ object Translator {
             "Error:" to "Error:",
             "Try bypass code '123456'." to "Try bypass code '123456'.",
             "OTP must be exactly 6 digits" to "OTP must be exactly 6 digits",
+            "Welcome to FinKlar" to "Welcome to FinKlar",
+            "Offline-first smart personal money manager" to "Offline-first smart personal money manager",
             
             "Net Balance" to "Net Balance",
             "Monthly Income" to "Monthly Income",
@@ -195,6 +197,8 @@ object Translator {
             "Error:" to "त्रुटि:",
             "Try bypass code '123456'." to "बायपास कोड '123456' आज़माएं।",
             "OTP must be exactly 6 digits" to "ओटीपी ठीक 6 अंकों का होना चाहिए",
+            "Welcome to FinKlar" to "फिनक्लार में आपका स्वागत है",
+            "Offline-first smart personal money manager" to "ऑफलाइन-फर्स्ट स्मार्ट पर्सनल मनी मैनेजर",
             
             "Net Balance" to "कुल जमा राशि",
             "Monthly Income" to "मासिक आय",
@@ -1366,51 +1370,13 @@ fun TransactionsScreen(
                         items = filteredTransactions,
                         key = { tx -> tx.id }
                     ) { tx ->
-                        val dismissState = rememberSwipeToDismissBoxState(
-                            confirmValueChange = { value ->
-                                if (value == SwipeToDismissBoxValue.StartToEnd) {
-                                    viewModel.deleteTransaction(tx)
-                                    true
-                                } else {
-                                    false
-                                }
-                            }
+                        TransactionRow(
+                            tx = tx,
+                            currency = currency,
+                            onClick = { selectedTxForDetails = tx },
+                            onConfirm = { viewModel.confirmPendingTransaction(tx.id) },
+                            onReject = { viewModel.cancelPendingTransaction(tx.id) }
                         )
-
-                        SwipeToDismissBox(
-                            state = dismissState,
-                            enableDismissFromStartToEnd = true,
-                            enableDismissFromEndToStart = false,
-                            backgroundContent = {
-                                val color = if (dismissState.dismissDirection == SwipeToDismissBoxValue.StartToEnd) {
-                                    Color.Red
-                                } else {
-                                    Color.Transparent
-                                }
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .background(color, shape = RoundedCornerShape(16.dp))
-                                        .padding(horizontal = 20.dp),
-                                    contentAlignment = Alignment.CenterStart
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Delete,
-                                        contentDescription = "Delete",
-                                        tint = Color.White
-                                    )
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            TransactionRow(
-                                tx = tx,
-                                currency = currency,
-                                onClick = { selectedTxForDetails = tx },
-                                onConfirm = { viewModel.confirmPendingTransaction(tx.id) },
-                                onReject = { viewModel.cancelPendingTransaction(tx.id) }
-                            )
-                        }
                     }
                 }
             }
@@ -3243,30 +3209,6 @@ fun SettingsScreen(
         Divider()
 
         Text("Maintenance & Reset".translate(language), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
-                Text("Clear Wallet Transactions".translate(language), fontWeight = FontWeight.Bold)
-                Text("Permanently deletes all transactions from the wallet. This resets your balance and data.".translate(language), style = MaterialTheme.typography.bodySmall)
-            }
-            OutlinedButton(
-                onClick = {
-                    viewModel.clearTransactionsFromWallet()
-                    android.widget.Toast.makeText(context, "Wallet transactions cleared!".translate(language), android.widget.Toast.LENGTH_SHORT).show()
-                },
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text("Clear Wallet".translate(language))
-            }
-        }
-
-        Divider()
 
         val setZeroTimestamp by viewModel.setZeroTimestamp.collectAsState()
         val formattedZeroDate = remember(setZeroTimestamp) {
