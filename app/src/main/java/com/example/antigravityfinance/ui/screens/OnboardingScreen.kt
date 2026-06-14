@@ -95,14 +95,14 @@ fun OnboardingScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Welcome to FinKlar".translate(currentLanguage),
+                    text = "Welcome to FinKlar",
                     style = MaterialTheme.typography.headlineMedium.copy(
                         fontWeight = FontWeight.ExtraBold,
                         color = Color.Black
                     )
                 )
                 Text(
-                    text = "Offline-first smart personal money manager".translate(currentLanguage),
+                    text = "Offline-first smart personal money manager",
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.Black.copy(alpha = 0.7f),
                     textAlign = TextAlign.Center

@@ -51,12 +51,19 @@ class TransactionSmsReceiver : BroadcastReceiver() {
             }
 
             if (result.autoAdd && result.amount != null) {
-                val duplicate = repo.checkForDuplicate(result.amount, result.merchantOrSender, result.smsTimestamp)
+                var resolvedMerchant = result.merchantOrSender
+                if (resolvedMerchant == "Unknown Merchant" && senderId.isNotBlank() && senderId != "Unknown") {
+                    val contactName = SmsInboxScanner.getContactName(context, senderId)
+                    if (contactName != null) {
+                        resolvedMerchant = contactName
+                    }
+                }
+                val duplicate = repo.checkForDuplicate(result.amount, resolvedMerchant, result.smsTimestamp)
                 if (duplicate == null) {
-                    val category = AutoCategorizer.categorize(result.merchantOrSender)
+                    val category = AutoCategorizer.categorize(resolvedMerchant)
                     val tx = Transaction(
                         amount = result.amount,
-                        merchant = result.merchantOrSender,
+                        merchant = resolvedMerchant,
                         date = result.smsTimestamp,
                         category = category,
                         notes = result.rawSms,

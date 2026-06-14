@@ -65,10 +65,17 @@ object SmsInboxScanner {
                     
                     val result = SmsDetectionModule.detect(body, address, date, trustedSenders)
                     if (result.autoAdd && result.amount != null) {
-                        val category = AutoCategorizer.categorize(result.merchantOrSender)
+                        var resolvedMerchant = result.merchantOrSender
+                        if (resolvedMerchant == "Unknown Merchant" && address.isNotBlank()) {
+                            val contactName = getContactName(context, address)
+                            if (contactName != null) {
+                                resolvedMerchant = contactName
+                            }
+                        }
+                        val category = AutoCategorizer.categorize(resolvedMerchant)
                         val transaction = Transaction(
                             amount = result.amount,
-                            merchant = result.merchantOrSender,
+                            merchant = resolvedMerchant,
                             date = date,
                             category = category,
                             notes = result.rawSms,
@@ -134,5 +141,31 @@ object SmsInboxScanner {
         }
         
         return SyncSmsResult(addedCount, latestBalance, maxTimestamp)
+    }
+
+    fun getContactName(context: Context, phoneNumber: String): String? {
+        if (phoneNumber.isBlank()) return null
+        val permissionCheck = androidx.core.content.ContextCompat.checkSelfPermission(
+            context,
+            android.Manifest.permission.READ_CONTACTS
+        )
+        if (permissionCheck != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            return null
+        }
+        val uri = Uri.withAppendedPath(
+            android.provider.ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
+            Uri.encode(phoneNumber)
+        )
+        val projection = arrayOf(android.provider.ContactsContract.PhoneLookup.DISPLAY_NAME)
+        try {
+            context.contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    return cursor.getString(0)
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("SmsInboxScanner", "Error querying contacts for number: $phoneNumber", e)
+        }
+        return null
     }
 }

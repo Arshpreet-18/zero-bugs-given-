@@ -349,11 +349,14 @@ class FinanceViewModel(application: Application) : AndroidViewModel(application)
 
     // --- INITIALIZATION ---
     init {
-        // Pre-load Gemini API key from build constant if not already saved
+        // Pre-load Gemini API key from the BuildConfig constant (sourced from local.properties)
+        // if the user has not already saved one. Empty when no key is configured at build time.
         if (securityHelper.getGeminiApiKey().isBlank()) {
-            val builtInGeminiKey = "AIzaSyBc6g80KInWVotunbFODrrUs5ZvW4Ts7lC54d78-09A"
-            securityHelper.saveGeminiApiKey(builtInGeminiKey)
-            _geminiApiKey.value = builtInGeminiKey
+            val builtInGeminiKey = com.example.antigravityfinance.BuildConfig.GEMINI_API_KEY
+            if (builtInGeminiKey.isNotBlank()) {
+                securityHelper.saveGeminiApiKey(builtInGeminiKey)
+                _geminiApiKey.value = builtInGeminiKey
+            }
         }
 
         viewModelScope.launch {
@@ -660,7 +663,7 @@ class FinanceViewModel(application: Application) : AndroidViewModel(application)
                     val requestBody = jsonRequest.toString().toRequestBody(mediaType)
                     
                     val request = Request.Builder()
-                        .url("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey")
+                        .url("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey")
                         .post(requestBody)
                         .build()
 
@@ -989,6 +992,32 @@ class FinanceViewModel(application: Application) : AndroidViewModel(application)
         _chatHistory.value = listOf(
             ChatMessage("welcome", "Chat log cleared. Ask me a new financial query!", false)
         )
+    }
+
+    // --- AI SAVINGS INSIGHTS ---
+    private val _savingsInsights = MutableStateFlow<List<String>>(emptyList())
+    val savingsInsights: StateFlow<List<String>> = _savingsInsights.asStateFlow()
+
+    private val _isInsightsLoading = MutableStateFlow(false)
+    val isInsightsLoading: StateFlow<Boolean> = _isInsightsLoading.asStateFlow()
+
+    fun generateSavingsInsights() {
+        if (_isInsightsLoading.value) return
+        viewModelScope.launch {
+            _isInsightsLoading.value = true
+            val tips = AiAssistantService.generateSavingsInsights(
+                transactions = allTransactions.value,
+                budgets = budgets.value,
+                goals = goals.value,
+                investments = investments.value,
+                apiKey = securityHelper.getGeminiApiKey(),
+                setZeroTimestamp = setZeroTimestamp.value,
+                currencySymbol = currency.value.symbol,
+                languageCode = language.value.code
+            )
+            _savingsInsights.value = tips
+            _isInsightsLoading.value = false
+        }
     }
 
 

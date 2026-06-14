@@ -71,8 +71,6 @@ object Translator {
             "Error:" to "Error:",
             "Try bypass code '123456'." to "Try bypass code '123456'.",
             "OTP must be exactly 6 digits" to "OTP must be exactly 6 digits",
-            "Welcome to FinKlar" to "Welcome to FinKlar",
-            "Offline-first smart personal money manager" to "Offline-first smart personal money manager",
             
             "Net Balance" to "Net Balance",
             "Monthly Income" to "Monthly Income",
@@ -197,8 +195,6 @@ object Translator {
             "Error:" to "त्रुटि:",
             "Try bypass code '123456'." to "बायपास कोड '123456' आज़माएं।",
             "OTP must be exactly 6 digits" to "ओटीपी ठीक 6 अंकों का होना चाहिए",
-            "Welcome to FinKlar" to "फिनक्लार में आपका स्वागत है",
-            "Offline-first smart personal money manager" to "ऑफलाइन-फर्स्ट स्मार्ट पर्सनल मनी मैनेजर",
             
             "Net Balance" to "कुल जमा राशि",
             "Monthly Income" to "मासिक आय",
@@ -294,7 +290,37 @@ object Translator {
             "API Keys updated successfully!" to "एपीआई कुंजी सफलतापूर्वक अपडेट की गई!",
             "Low Balance Alert: EMI" to "कम बैलेंस अलर्ट: ईएमआई",
             "Low Balance Alert: SIP" to "कम बैलेंस अलर्ट: एसआईपी",
-            "Domain Spend Percentage" to "डोमेन खर्च प्रतिशत"
+            "Domain Spend Percentage" to "डोमेन खर्च प्रतिशत",
+            "Financial Tools" to "वित्तीय उपकरण",
+            "Safe Spend" to "सुरक्षित खर्च",
+            "Savings Goals" to "बचत लक्ष्य",
+            "Investments" to "निवेश",
+            "Splitwise" to "स्प्लिटवाइज़",
+            "Statistics" to "सांख्यिकी",
+            "Investment Portfolio" to "निवेश पोर्टफोलियो",
+            "Analyze spent %, commit bills & save" to "खर्च % का विश्लेषण करें, बिल प्रतिबद्ध करें और सहेजें",
+            "Track contributions and streaks" to "योगदान और स्ट्रीक्स को ट्रैक करें",
+            "Split bills and settle balances" to "बिल विभाजित करें और शेष राशि का निपटान करें",
+            "Mutual funds, stocks & SIP tracker" to "म्यूचुअल फंड, स्टॉक और एसआईपी ट्रैकर",
+            "Enable in settings to track stocks & SIPs" to "स्टॉक और एसआईपी ट्रैक करने के लिए सेटिंग्स में सक्षम करें",
+            "View bar graph and pie chart analysis" to "बार ग्राफ़ और पाई चार्ट विश्लेषण देखें",
+            "Travel" to "यात्रा",
+            "Food" to "भोजन",
+            "Livelihood" to "आजीविका",
+            "Compulsory Expenses" to "अनिवार्य खर्च",
+            "Shopping" to "खरीदारी",
+            "Salary & Income" to "वेतन और आय",
+            "Others" to "अन्य",
+            "All Categories" to "सभी श्रेणियां",
+            "All" to "सभी",
+            "Pending" to "लंबित",
+            "Confirmed" to "पुष्टि की गई",
+            "Cancelled" to "रद्द",
+            "Upcoming Commitments" to "आगामी प्रतिबद्धताएं",
+            "No EMI or SIP due" to "कोई ईएमआई या एसआईपी देय नहीं है",
+            "EMI Payment" to "ईएमआई भुगतान",
+            "SIP Commitment" to "एसआईपी प्रतिबद्धता",
+            "Day" to "दिन"
         )
     )
 
@@ -713,6 +739,11 @@ fun DashboardScreen(
     val investments by viewModel.investments.collectAsState()
     val userName by viewModel.userName.collectAsState()
 
+    val emiAmount by viewModel.emiAmount.collectAsState()
+    val emiDay by viewModel.emiDay.collectAsState()
+    val sipAmount by viewModel.sipAmount.collectAsState()
+    val sipDay by viewModel.sipDay.collectAsState()
+
     var showCreditDialog by remember { mutableStateOf(false) }
     var showDebitDialog by remember { mutableStateOf(false) }
 
@@ -721,7 +752,22 @@ fun DashboardScreen(
     }
     
     val setZeroTimestamp by viewModel.setZeroTimestamp.collectAsState()
-    val confirmedTx = transactions.filter { it.status == TransactionStatus.CONFIRMED && it.date > setZeroTimestamp }
+
+    val startOfMonthTimestamp = remember(transactions) {
+        val cal = java.util.Calendar.getInstance()
+        cal.set(java.util.Calendar.DAY_OF_MONTH, 1)
+        cal.set(java.util.Calendar.HOUR_OF_DAY, 0)
+        cal.set(java.util.Calendar.MINUTE, 0)
+        cal.set(java.util.Calendar.SECOND, 0)
+        cal.set(java.util.Calendar.MILLISECOND, 0)
+        cal.timeInMillis
+    }
+
+    val confirmedTx = transactions.filter { 
+        it.status == TransactionStatus.CONFIRMED && 
+        it.date >= startOfMonthTimestamp && 
+        it.date > setZeroTimestamp 
+    }
     val creditSum = confirmedTx.filter { it.isIncome }.sumOf { it.amount }
     val debitSum = confirmedTx.filter { !it.isIncome }.sumOf { it.amount }
     val netBalance = creditSum - debitSum
@@ -908,6 +954,84 @@ fun DashboardScreen(
             }
         }
 
+        // ── Upcoming Commitments Card ─────────────────────────────────────────────
+        Card(
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+            ),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Rounded.Event,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Upcoming Commitments".translate(language),
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                val hasEmi = emiAmount > 0.0
+                val hasSip = sipAmount > 0.0
+
+                if (!hasEmi && !hasSip) {
+                    Text(
+                        text = "No EMI or SIP due".translate(language),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                } else {
+                    if (hasEmi) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "EMI Payment".translate(language),
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = "${"Day".translate(language)} $emiDay (${currency.symbol}${String.format("%.2f", emiAmount)})",
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                    if (hasSip) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "SIP Commitment".translate(language),
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = "${"Day".translate(language)} $sipDay (${currency.symbol}${String.format("%.2f", sipAmount)})",
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
         if (confirmedTx.isEmpty()) {
             Card(
                 shape = RoundedCornerShape(20.dp),
@@ -1089,9 +1213,10 @@ fun TransactionsScreen(
     var selectedTxForDetails by remember { mutableStateOf<Transaction?>(null) }
     
     val smsPermissionLauncher = rememberLauncherForActivityResult(
-        contract = androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
+        contract = androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissionsMap ->
+        val smsGranted = permissionsMap[android.Manifest.permission.READ_SMS] ?: false
+        if (smsGranted) {
             viewModel.scanSmsInbox { count, _ ->
                 scanStatusMessage = "Scan complete. Synced $count new transactions."
             }
@@ -1110,6 +1235,7 @@ fun TransactionsScreen(
     var showManualDialog by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
     var selectedStatusFilter by remember { mutableStateOf("All") }
+    var selectedCategoryFilter by remember { mutableStateOf("All") }
     var sortBy by remember { mutableStateOf("Date") }
     var sortAscending by remember { mutableStateOf(false) }
     
@@ -1141,7 +1267,7 @@ fun TransactionsScreen(
         }
     }
 
-    val filteredTransactions = remember(transactions, searchQuery, selectedStatusFilter, sortBy, sortAscending) {
+    val filteredTransactions = remember(transactions, searchQuery, selectedStatusFilter, selectedCategoryFilter, sortBy, sortAscending) {
         var list = transactions
 
         // 1. Status Filter
@@ -1154,6 +1280,11 @@ fun TransactionsScreen(
                     else -> true
                 }
             }
+        }
+
+        // 1.5 Category Filter
+        if (selectedCategoryFilter != "All") {
+            list = list.filter { tx -> tx.category.equals(selectedCategoryFilter, ignoreCase = true) }
         }
 
         // 2. Search query (merchant name, notes, banking/account details)
@@ -1193,15 +1324,20 @@ fun TransactionsScreen(
             )
             Button(
                 onClick = {
-                    val permission = android.Manifest.permission.READ_SMS
-                    val granted = androidx.core.content.ContextCompat.checkSelfPermission(context, permission) ==
-                        android.content.pm.PackageManager.PERMISSION_GRANTED
-                    if (granted) {
+                    val permissions = arrayOf(
+                        android.Manifest.permission.READ_SMS,
+                        android.Manifest.permission.READ_CONTACTS
+                    )
+                    val allGranted = permissions.all {
+                        androidx.core.content.ContextCompat.checkSelfPermission(context, it) ==
+                            android.content.pm.PackageManager.PERMISSION_GRANTED
+                    }
+                    if (allGranted) {
                         viewModel.scanSmsInbox { count, _ ->
                             scanStatusMessage = "Scan complete. Synced $count new transactions."
                         }
                     } else {
-                        smsPermissionLauncher.launch(permission)
+                        smsPermissionLauncher.launch(permissions)
                     }
                 },
                 enabled = !isSmsScanning,
@@ -1232,155 +1368,234 @@ fun TransactionsScreen(
         }
 
         Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
-            Column(
+            LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-            if (smsSyncedBalance != null) {
-                Card(
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            Icons.Default.AccountBalanceWallet,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(32.dp)
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Column {
-                            Text(
-                                text = "Last Synced Bank Balance".translate(language),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                            )
-                            Text(
-                                text = "${currency.symbol}${String.format("%,.2f", smsSyncedBalance)}",
-                                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
+                // 1. Last Synced Bank Balance Card
+                if (smsSyncedBalance != null) {
+                    item {
+                        Card(
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    Icons.Default.AccountBalanceWallet,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(32.dp)
+                                )
+                                Spacer(modifier = Modifier.width(16.dp))
+                                Column {
+                                    Text(
+                                        text = "Last Synced Bank Balance".translate(language),
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                                    )
+                                    Text(
+                                        text = "${currency.symbol}${String.format("%,.2f", smsSyncedBalance)}",
+                                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                }
+                            }
                         }
                     }
                 }
-            }
 
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                label = { Text("Search transactions...".translate(language)) },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                trailingIcon = {
-                    if (searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { searchQuery = "" }) {
-                            Icon(Icons.Default.Clear, contentDescription = "Clear")
-                        }
-                    }
-                },
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
-                    .padding(vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                listOf("All", "Pending", "Confirmed", "Cancelled").forEach { status ->
-                    val isSelected = selectedStatusFilter == status
-                    FilterChip(
-                        selected = isSelected,
-                        onClick = { selectedStatusFilter = status },
-                        label = { Text(status) },
-                        shape = RoundedCornerShape(8.dp)
+                // 2. Search Text Field
+                item {
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        label = { Text("Search transactions...".translate(language)) },
+                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                        trailingIcon = {
+                            if (searchQuery.isNotEmpty()) {
+                                IconButton(onClick = { searchQuery = "" }) {
+                                    Icon(Icons.Default.Clear, contentDescription = "Clear")
+                                }
+                            }
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
-            }
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Sort by:".translate(language),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    var showSortMenu by remember { mutableStateOf(false) }
-                    Box {
-                        TextButton(onClick = { showSortMenu = true }) {
-                            Text(sortBy.translate(language))
-                            Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                // 3. Status Filters Row
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState())
+                            .padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        listOf("All", "Pending", "Confirmed", "Cancelled").forEach { status ->
+                            val isSelected = selectedStatusFilter == status
+                            FilterChip(
+                                selected = isSelected,
+                                onClick = { selectedStatusFilter = status },
+                                label = { Text(status.translate(language)) },
+                                shape = RoundedCornerShape(8.dp)
+                            )
                         }
-                        DropdownMenu(
-                            expanded = showSortMenu,
-                            onDismissRequest = { showSortMenu = false }
+                    }
+                }
+
+                // 3.5 Category Filters Row
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState())
+                            .padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        val categories = listOf("All") + TransactionCategory.values().map { it.name }
+                        categories.forEach { category ->
+                            val isSelected = selectedCategoryFilter == category
+                            val displayName = if (category == "All") "All Categories" else {
+                                TransactionCategory.values().find { it.name == category }?.displayName ?: category
+                            }
+                            FilterChip(
+                                selected = isSelected,
+                                onClick = { selectedCategoryFilter = category },
+                                label = { Text(displayName.translate(language)) },
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                        }
+                    }
+                }
+
+                // 4. Sort row
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Sort by:".translate(language),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            listOf("Date", "Amount", "Merchant").forEach { option ->
-                                DropdownMenuItem(
-                                    text = { Text(option.translate(language)) },
-                                    onClick = {
-                                        sortBy = option
-                                        showSortMenu = false
+                            var showSortMenu by remember { mutableStateOf(false) }
+                            Box {
+                                TextButton(onClick = { showSortMenu = true }) {
+                                    Text(sortBy.translate(language))
+                                    Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                                }
+                                DropdownMenu(
+                                    expanded = showSortMenu,
+                                    onDismissRequest = { showSortMenu = false }
+                                ) {
+                                    listOf("Date", "Amount", "Merchant").forEach { option ->
+                                        DropdownMenuItem(
+                                            text = { Text(option.translate(language)) },
+                                            onClick = {
+                                                sortBy = option
+                                                showSortMenu = false
+                                            }
+                                        )
                                     }
+                                }
+                            }
+                            IconButton(onClick = { sortAscending = !sortAscending }) {
+                                Icon(
+                                    imageVector = if (sortAscending) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
+                                    contentDescription = "Sort direction"
                                 )
                             }
                         }
                     }
-                    IconButton(onClick = { sortAscending = !sortAscending }) {
-                        Icon(
-                            imageVector = if (sortAscending) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
-                            contentDescription = "Sort direction"
-                        )
-                    }
                 }
-            }
 
-            if (filteredTransactions.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("No transactions synced yet. Tap Scan SMS Inbox or Simulate SMS!".translate(language))
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
+                // 5. Transaction list / Empty State
+                if (filteredTransactions.isEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(250.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "No transactions synced yet. Tap Scan SMS Inbox or Simulate SMS!".translate(language),
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                            )
+                        }
+                    }
+                } else {
                     items(
                         items = filteredTransactions,
                         key = { tx -> tx.id }
                     ) { tx ->
-                        TransactionRow(
-                            tx = tx,
-                            currency = currency,
-                            onClick = { selectedTxForDetails = tx },
-                            onConfirm = { viewModel.confirmPendingTransaction(tx.id) },
-                            onReject = { viewModel.cancelPendingTransaction(tx.id) }
+                        val dismissState = rememberSwipeToDismissBoxState(
+                            confirmValueChange = { value ->
+                                if (value == SwipeToDismissBoxValue.StartToEnd) {
+                                    viewModel.deleteTransaction(tx)
+                                    true
+                                } else {
+                                    false
+                                }
+                            }
                         )
+
+                        SwipeToDismissBox(
+                            state = dismissState,
+                            enableDismissFromStartToEnd = true,
+                            enableDismissFromEndToStart = false,
+                            backgroundContent = {
+                                val color = if (dismissState.dismissDirection == SwipeToDismissBoxValue.StartToEnd) {
+                                    Color.Red
+                                } else {
+                                    Color.Transparent
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(color, shape = RoundedCornerShape(16.dp))
+                                        .padding(horizontal = 20.dp),
+                                    contentAlignment = Alignment.CenterStart
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = "Delete",
+                                        tint = Color.White
+                                    )
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            TransactionRow(
+                                tx = tx,
+                                currency = currency,
+                                onClick = { selectedTxForDetails = tx },
+                                onConfirm = { viewModel.confirmPendingTransaction(tx.id) },
+                                onReject = { viewModel.cancelPendingTransaction(tx.id) }
+                            )
+                        }
                     }
                 }
             }
-        }
 
         // Expandable Speed Dial FAB in bottom-right
         Column(
@@ -3210,6 +3425,30 @@ fun SettingsScreen(
 
         Text("Maintenance & Reset".translate(language), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
 
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+                Text("Clear Wallet Transactions".translate(language), fontWeight = FontWeight.Bold)
+                Text("Permanently deletes all transactions from the wallet. This resets your balance and data.".translate(language), style = MaterialTheme.typography.bodySmall)
+            }
+            OutlinedButton(
+                onClick = {
+                    viewModel.clearTransactionsFromWallet()
+                    android.widget.Toast.makeText(context, "Wallet transactions cleared!".translate(language), android.widget.Toast.LENGTH_SHORT).show()
+                },
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("Clear Wallet".translate(language))
+            }
+        }
+
+        Divider()
+
         val setZeroTimestamp by viewModel.setZeroTimestamp.collectAsState()
         val formattedZeroDate = remember(setZeroTimestamp) {
             if (setZeroTimestamp > 0L) {
@@ -3582,21 +3821,21 @@ fun FinancialToolsScreen(
                 )
             }
 
-            // Grid Layout (2 columns per row)
+            // Balanced Grid Layout (2 columns per row, exactly 4 cards, all translated)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 ToolCard(
-                    title = "Safe Spend",
-                    subtitle = "Analyze spent %, commit bills & save",
+                    title = "Safe Spend".translate(language),
+                    subtitle = "Analyze spent %, commit bills & save".translate(language),
                     icon = Icons.Rounded.AccountBalance,
                     onClick = { activeTool = "Safe Spend" },
                     modifier = Modifier.weight(1f)
                 )
                 ToolCard(
-                    title = "Savings Goals",
-                    subtitle = "Track contributions and streaks",
+                    title = "Savings Goals".translate(language),
+                    subtitle = "Track contributions and streaks".translate(language),
                     icon = Icons.Rounded.Flag,
                     onClick = { activeTool = "Goals" },
                     modifier = Modifier.weight(1f)
@@ -3608,44 +3847,19 @@ fun FinancialToolsScreen(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 ToolCard(
-                    title = "Splitwise",
-                    subtitle = "Split bills and settle balances",
+                    title = "Splitwise".translate(language),
+                    subtitle = "Split bills and settle balances".translate(language),
                     icon = Icons.Rounded.Group,
                     onClick = { activeTool = "Splitwise" },
                     modifier = Modifier.weight(1f)
                 )
-                if (isInvestmentsEnabled) {
-                    ToolCard(
-                        title = "Investments",
-                        subtitle = "Mutual funds, stocks & SIP tracker",
-                        icon = Icons.Rounded.TrendingUp,
-                        onClick = { activeTool = "Investments" },
-                        modifier = Modifier.weight(1f)
-                    )
-                } else {
-                    ToolCard(
-                        title = "Investments (Locked)",
-                        subtitle = "Enable in settings to track stocks & SIPs",
-                        icon = Icons.Rounded.Lock,
-                        onClick = {},
-                        enabled = false,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
                 ToolCard(
-                    title = "Statistics",
-                    subtitle = "View bar graph and pie chart analysis",
+                    title = "Statistics".translate(language),
+                    subtitle = "View bar graph and pie chart analysis".translate(language),
                     icon = Icons.Rounded.BarChart,
                     onClick = { activeTool = "Statistics" },
                     modifier = Modifier.weight(1f)
                 )
-                Spacer(modifier = Modifier.weight(1f))
             }
         }
     } else {
@@ -3697,9 +3911,18 @@ fun StatisticsScreen(
     val currency by viewModel.currency.collectAsState()
     val language by viewModel.language.collectAsState()
     val setZeroTimestamp by viewModel.setZeroTimestamp.collectAsState()
+    val savingsInsights by viewModel.savingsInsights.collectAsState()
+    val isInsightsLoading by viewModel.isInsightsLoading.collectAsState()
 
     val confirmedTx = remember(transactions, setZeroTimestamp) {
         transactions.filter { it.status == TransactionStatus.CONFIRMED && it.date > setZeroTimestamp }
+    }
+
+    // Auto-load AI savings tips once when there is spending data and no tips yet.
+    LaunchedEffect(confirmedTx.isNotEmpty()) {
+        if (confirmedTx.isNotEmpty() && savingsInsights.isEmpty() && !isInsightsLoading) {
+            viewModel.generateSavingsInsights()
+        }
     }
     val creditSum = remember(confirmedTx) { confirmedTx.filter { it.isIncome }.sumOf { it.amount } }
     val debitSum = remember(confirmedTx) { confirmedTx.filter { !it.isIncome }.sumOf { it.amount } }
@@ -3738,6 +3961,84 @@ fun StatisticsScreen(
                 )
             }
         } else {
+            // AI Savings Insights
+            Card(
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Default.Lightbulb,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Savings Insights".translate(language),
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        TextButton(
+                            onClick = { viewModel.generateSavingsInsights() },
+                            enabled = !isInsightsLoading
+                        ) {
+                            Text(text = "Refresh".translate(language))
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    when {
+                        isInsightsLoading -> {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    text = "Analyzing your spending...".translate(language),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                        savingsInsights.isEmpty() -> {
+                            Text(
+                                text = "Tap Refresh to get AI tips on saving money and optimizing your expenses.".translate(language),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        else -> {
+                            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                savingsInsights.forEach { tip ->
+                                    Row(verticalAlignment = Alignment.Top) {
+                                        Text(
+                                            text = "•",
+                                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = tip,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             Card(
                 shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
