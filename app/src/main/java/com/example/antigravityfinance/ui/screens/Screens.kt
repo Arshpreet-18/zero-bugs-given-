@@ -774,20 +774,20 @@ fun DashboardScreen(
                         Icon(
                             Icons.Rounded.AccountBalanceWallet,
                             contentDescription = null,
-                            tint = Color.White.copy(alpha = 0.8f),
+                            tint = Color.Black.copy(alpha = 0.6f),
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = "Net Balance".translate(language),
-                            color = Color.White.copy(alpha = 0.85f),
+                            color = Color.Black.copy(alpha = 0.7f),
                             style = MaterialTheme.typography.labelLarge
                         )
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "${currency.symbol}${String.format("%,.2f", netBalance)}",
-                        color = Color.White,
+                        color = Color.Black,
                         style = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.ExtraBold)
                     )
                     Spacer(modifier = Modifier.height(20.dp))
@@ -802,7 +802,7 @@ fun DashboardScreen(
                                 .weight(1f)
                                 .clip(RoundedCornerShape(14.dp))
                                 .clickable { showCreditDialog = true }
-                                .background(Color.White.copy(alpha = 0.15f))
+                                .background(Color.Black.copy(alpha = 0.06f))
                                 .padding(horizontal = 12.dp, vertical = 10.dp)
                         ) {
                             Column {
@@ -816,12 +816,12 @@ fun DashboardScreen(
                                         Icon(Icons.Default.ArrowDownward, contentDescription = null, tint = Color.White, modifier = Modifier.size(12.dp))
                                     }
                                     Spacer(modifier = Modifier.width(6.dp))
-                                    Text("Credit", color = Color.White.copy(alpha = 0.75f), style = MaterialTheme.typography.labelSmall)
+                                    Text("Credit", color = Color.Black.copy(alpha = 0.6f), style = MaterialTheme.typography.labelSmall)
                                 }
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     text = "${currency.symbol}${String.format("%,.0f", creditSum)}",
-                                    color = Color.White,
+                                    color = Color.Black,
                                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                                 )
                             }
@@ -832,7 +832,7 @@ fun DashboardScreen(
                                 .weight(1f)
                                 .clip(RoundedCornerShape(14.dp))
                                 .clickable { showDebitDialog = true }
-                                .background(Color.White.copy(alpha = 0.15f))
+                                .background(Color.Black.copy(alpha = 0.06f))
                                 .padding(horizontal = 12.dp, vertical = 10.dp)
                         ) {
                             Column {
@@ -846,12 +846,12 @@ fun DashboardScreen(
                                         Icon(Icons.Default.ArrowUpward, contentDescription = null, tint = Color.White, modifier = Modifier.size(12.dp))
                                     }
                                     Spacer(modifier = Modifier.width(6.dp))
-                                    Text("Debit", color = Color.White.copy(alpha = 0.75f), style = MaterialTheme.typography.labelSmall)
+                                    Text("Debit", color = Color.Black.copy(alpha = 0.6f), style = MaterialTheme.typography.labelSmall)
                                 }
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     text = "${currency.symbol}${String.format("%,.0f", debitSum)}",
-                                    color = Color.White,
+                                    color = Color.Black,
                                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                                 )
                             }
@@ -2254,7 +2254,7 @@ fun ChatBubble(msg: ChatMessage) {
         ) {
             Text(
                 text = msg.text,
-                color = if (isUser) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                color = if (isUser) Color.Black else MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodyMedium
             )
         }

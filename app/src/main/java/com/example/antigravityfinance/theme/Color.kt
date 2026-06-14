@@ -49,3 +49,5 @@ val PaletteBlue   = Color(0xFF1A73E8)
 val PaletteGreen  = Color(0xFF34A853)
 val PaletteYellow = Color(0xFFFBBC04)
 val PaletteOrange = Color(0xFFFA7B17)
+
+val AppPrimaryColor = Color(0xFF99CDD8)

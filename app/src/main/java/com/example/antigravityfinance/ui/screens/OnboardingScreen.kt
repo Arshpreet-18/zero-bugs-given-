@@ -82,7 +82,7 @@ fun OnboardingScreen(
                 Icon(
                     Icons.Rounded.AccountBalanceWallet,
                     contentDescription = null,
-                    tint = Color.White,
+                    tint = Color.Black,
                     modifier = Modifier.size(48.dp)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -90,13 +90,13 @@ fun OnboardingScreen(
                     text = "Welcome to FinKlar",
                     style = MaterialTheme.typography.headlineMedium.copy(
                         fontWeight = FontWeight.ExtraBold,
-                        color = Color.White
+                        color = Color.Black
                     )
                 )
                 Text(
                     text = "Offline-first smart personal money manager",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.White.copy(alpha = 0.8f),
+                    color = Color.Black.copy(alpha = 0.7f),
                     textAlign = TextAlign.Center
                 )
             }
@@ -222,7 +222,7 @@ fun OnboardingScreen(
                                         CircularProgressIndicator(
                                             modifier = Modifier.size(24.dp),
                                             strokeWidth = 2.dp,
-                                            color = Color.White
+                                            color = MaterialTheme.colorScheme.onPrimary
                                         )
                                     } else {
                                         Text("Request Verification Code", fontWeight = FontWeight.Bold)
@@ -322,7 +322,7 @@ fun OnboardingScreen(
                                         CircularProgressIndicator(
                                             modifier = Modifier.size(24.dp),
                                             strokeWidth = 2.dp,
-                                            color = Color.White
+                                            color = MaterialTheme.colorScheme.onPrimary
                                         )
                                     } else {
                                         Text("Verify & Continue", fontWeight = FontWeight.Bold)
