@@ -34,9 +34,15 @@ object SmsDetectionModule {
         }
 
         fun isStandardBankSenderPattern(senderId: String): Boolean {
-            // Typical sender format in India: e.g. "VK-HDFCBK", "AD-AxisBk", "MD-SBICRD"
-            val pattern = Pattern.compile("^[a-zA-Z]{2}-[a-zA-Z]{5,9}$")
-            return pattern.matcher(senderId).matches()
+            // Standard bank DLT header: e.g. "VK-HDFCBK", "AD-SBICRD", "BP-PAYTMB"
+            val dltPattern = Pattern.compile("^[a-zA-Z]{2}-[a-zA-Z0-9]{4,10}$")
+            if (dltPattern.matcher(senderId).matches()) return true
+            // Shortcodes: e.g. GPAY, PAYTM, PHONEPE, AMAZON
+            val shortNames = listOf("GPAY", "PAYTM", "PHONEPE", "BHARPE", "AMAZON", "FLIPKRT",
+                "HDFCBK", "SBIPSG", "ICICIB", "AXISBK", "KOTAKB", "IDFCBK", "BOBINF",
+                "CANBNK", "PNBSMS", "INDUSB", "YESBNK")
+            val upper = senderId.uppercase()
+            return shortNames.any { upper.contains(it) }
         }
     }
 
@@ -208,8 +214,10 @@ object SmsDetectionModule {
         val merchant = TransactionExtractor.extractMerchantOrSender(body)
 
         // 2. Identify transaction keywords
-        val creditKeywords = listOf("credited", "credited to", "deposited", "deposit", "received", "salary", "refund", "cashback", "reversed", "reversal")
-        val debitKeywords = listOf("debited", "debited from", "spent", "charged", "withdrawn", "withdrawal", "paid", "payment", "sent", "purchase")
+        val creditKeywords = listOf("credited", "credited to", "deposited", "deposit", "received", "salary", "refund", "cashback", "reversed", "reversal",
+            "money received", "amount received", "upi cr", "cr.", "cr ")
+        val debitKeywords = listOf("debited", "debited from", "spent", "charged", "withdrawn", "withdrawal", "paid", "payment", "sent", "purchase",
+            "deducted", "upi dr", "dr.", "dr ", "transaction successful", "txn successful", "transfer successful")
 
         val hasCreditWord = creditKeywords.any { text.contains(it) } || text.contains("cr")
         val hasDebitWord = debitKeywords.any { text.contains(it) } || text.contains("dr")
@@ -312,9 +320,9 @@ object SmsDetectionModule {
             reason.add("Fake payment pattern: Generic received claims but no reference detail (-40)")
         }
 
-        if (maskedAcc == null && refNo == null && !isOtp) {
-            score -= 30
-            reason.add("No masked account/card/reference detail exists (-30)")
+        if (maskedAcc == null && refNo == null && upiId == null && !isOtp) {
+            score -= 15
+            reason.add("No account/UPI/reference detail found (-15)")
         }
 
         // Clamp score between 0 and 100
@@ -334,14 +342,14 @@ object SmsDetectionModule {
         } else if (isFakePayment) {
             classification = SmsClassification.FAKE_PAYMENT_MESSAGE
         } else if (detectedType != TransactionType.NONE && amount != null) {
-            if (finalScore >= 75 && !isPromoSpam && !isLoanSpam && !isFakePayment) {
+            if (finalScore >= 60 && !isPromoSpam && !isLoanSpam && !isFakePayment) {
                 classification = if (detectedType == TransactionType.DEBIT) {
                     SmsClassification.REAL_DEBIT_TRANSACTION
                 } else {
                     SmsClassification.REAL_CREDIT_TRANSACTION
                 }
                 autoAdd = true
-            } else if (finalScore >= 50) {
+            } else if (finalScore >= 40) {
                 classification = SmsClassification.POSSIBLE_TRANSACTION_NEEDS_REVIEW
             } else {
                 classification = SmsClassification.NON_TRANSACTION

@@ -5,11 +5,15 @@ import com.example.antigravityfinance.data.model.Transaction
 import com.example.antigravityfinance.data.model.TransactionCategory
 import com.example.antigravityfinance.data.model.TransactionStatus
 import com.example.antigravityfinance.service.sms.AutoCategorizer
-import com.google.ai.client.generativeai.GenerativeModel
-import com.google.ai.client.generativeai.type.content
 import kotlinx.coroutines.delay
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONArray
 import org.json.JSONObject
 import java.util.Calendar
+import java.util.concurrent.TimeUnit
 
 object OcrScanner {
 
@@ -43,12 +47,19 @@ object OcrScanner {
         )
     }
 
-    suspend fun scanReceiptReal(bitmap: Bitmap, apiKey: String): List<Transaction> {
-        return try {
-            val model = GenerativeModel(
-                modelName = "gemini-1.5-flash",
-                apiKey = apiKey
-            )
+    suspend fun scanReceiptReal(bitmap: Bitmap, apiKey: String): List<Transaction> = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+        try {
+            val client = OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS)
+                .build()
+
+            val outputStream = java.io.ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
+            val imageBytes = outputStream.toByteArray()
+            val base64Image = android.util.Base64.encodeToString(imageBytes, android.util.Base64.NO_WRAP)
+
             val prompt = """
                 Analyze this receipt or transaction screenshot. It may contain one or multiple transaction records.
                 Detect all records. For each transaction record, extract:
@@ -70,61 +81,96 @@ object OcrScanner {
                 ]
             """.trimIndent()
 
-            val response = model.generateContent(
-                content {
-                    image(bitmap)
-                    text(prompt)
-                }
-            )
-            val jsonText = response.text?.trim() ?: return emptyList()
-            // Extract json if wrapped in ```json ... ```
-            val cleanedJson = if (jsonText.startsWith("```json")) {
-                jsonText.substringAfter("```json").substringBefore("```").trim()
-            } else if (jsonText.startsWith("```")) {
-                jsonText.substringAfter("```").substringBefore("```").trim()
-            } else {
-                jsonText
+            val jsonRequest = JSONObject().apply {
+                put("contents", JSONArray().apply {
+                    put(JSONObject().apply {
+                        put("parts", JSONArray().apply {
+                            put(JSONObject().apply {
+                                put("text", prompt)
+                            })
+                            put(JSONObject().apply {
+                                put("inlineData", JSONObject().apply {
+                                    put("mimeType", "image/jpeg")
+                                    put("data", base64Image)
+                                })
+                            })
+                        })
+                    })
+                })
             }
 
-            val jsonArray = org.json.JSONArray(cleanedJson)
-            val list = mutableListOf<Transaction>()
-            for (i in 0 until jsonArray.length()) {
-                val json = jsonArray.getJSONObject(i)
-                val amount = json.optDouble("amount", 0.0)
-                val merchant = json.optString("merchant", "Unknown Merchant")
-                val categoryStr = json.optString("category", "OTHERS")
-                val notes = json.optString("notes", "Scanned Receipt")
-                val dateStr = json.optString("date", "")
+            val mediaType = "application/json; charset=utf-8".toMediaType()
+            val requestBody = jsonRequest.toString().toRequestBody(mediaType)
+            
+            val request = Request.Builder()
+                .url("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey")
+                .post(requestBody)
+                .build()
+
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    val errBody = response.body?.string() ?: ""
+                    throw Exception("Gemini OCR API failed: ${response.code} $errBody")
+                }
                 
-                val dateMs = if (dateStr.isNotEmpty()) {
-                    try {
-                        val parts = dateStr.split("-")
-                        val cal = Calendar.getInstance()
-                        cal.set(parts[0].toInt(), parts[1].toInt() - 1, parts[2].toInt())
-                        cal.timeInMillis
-                    } catch (e: Exception) {
+                val responseBody = response.body?.string() ?: ""
+                val jsonResponse = JSONObject(responseBody)
+                val candidates = jsonResponse.getJSONArray("candidates")
+                if (candidates.length() == 0) return@withContext emptyList<Transaction>()
+                val contentObj = candidates.getJSONObject(0).getJSONObject("content")
+                val parts = contentObj.getJSONArray("parts")
+                if (parts.length() == 0) return@withContext emptyList<Transaction>()
+                
+                val jsonText = parts.getJSONObject(0).getString("text").trim()
+                
+                val cleanedJson = if (jsonText.startsWith("```json")) {
+                    jsonText.substringAfter("```json").substringBefore("```").trim()
+                } else if (jsonText.startsWith("```")) {
+                    jsonText.substringAfter("```").substringBefore("```").trim()
+                } else {
+                    jsonText
+                }
+
+                val jsonArray = org.json.JSONArray(cleanedJson)
+                val list = mutableListOf<Transaction>()
+                for (i in 0 until jsonArray.length()) {
+                    val json = jsonArray.getJSONObject(i)
+                    val amount = json.optDouble("amount", 0.0)
+                    val merchant = json.optString("merchant", "Unknown Merchant")
+                    val categoryStr = json.optString("category", "OTHERS")
+                    val notes = json.optString("notes", "Scanned Receipt")
+                    val dateStr = json.optString("date", "")
+                    
+                    val dateMs = if (dateStr.isNotEmpty()) {
+                        try {
+                            val partsDate = dateStr.split("-")
+                            val cal = Calendar.getInstance()
+                            cal.set(partsDate[0].toInt(), partsDate[1].toInt() - 1, partsDate[2].toInt())
+                            cal.timeInMillis
+                        } catch (e: Exception) {
+                            System.currentTimeMillis()
+                        }
+                    } else {
                         System.currentTimeMillis()
                     }
-                } else {
-                    System.currentTimeMillis()
-                }
 
-                list.add(
-                    Transaction(
-                        amount = amount,
-                        merchant = merchant,
-                        date = dateMs,
-                        category = categoryStr,
-                        notes = notes,
-                        account = "Scanned Receipt",
-                        status = TransactionStatus.CONFIRMED,
-                        isIncome = false,
-                        isRecurring = false,
-                        detectedFromSms = false
+                    list.add(
+                        Transaction(
+                            amount = amount,
+                            merchant = merchant,
+                            date = dateMs,
+                            category = categoryStr,
+                            notes = notes,
+                            account = "Scanned Receipt",
+                            status = TransactionStatus.CONFIRMED,
+                            isIncome = false,
+                            isRecurring = false,
+                            detectedFromSms = false
+                        )
                     )
-                )
+                }
+                list
             }
-            list
         } catch (e: Exception) {
             android.util.Log.e("OcrScanner", "Gemini OCR failed", e)
             throw e

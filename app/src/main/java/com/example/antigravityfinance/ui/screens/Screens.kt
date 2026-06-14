@@ -666,11 +666,15 @@ fun DashboardScreen(
     val smsSyncedBalance by viewModel.smsSyncedBalance.collectAsState()
     val investments by viewModel.investments.collectAsState()
 
+    var showCreditDialog by remember { mutableStateOf(false) }
+    var showDebitDialog by remember { mutableStateOf(false) }
+
     val totalSipAmount = remember(investments) {
         investments.filter { it.type == "SIP" }.sumOf { it.investedAmount }
     }
     
-    val confirmedTx = transactions.filter { it.status == TransactionStatus.CONFIRMED }
+    val setZeroTimestamp by viewModel.setZeroTimestamp.collectAsState()
+    val confirmedTx = transactions.filter { it.status == TransactionStatus.CONFIRMED && it.date > setZeroTimestamp }
     val creditSum = confirmedTx.filter { it.isIncome }.sumOf { it.amount }
     val debitSum = confirmedTx.filter { !it.isIncome }.sumOf { it.amount }
     val netBalance = creditSum - debitSum
@@ -686,13 +690,56 @@ fun DashboardScreen(
             )
         }.filter { it.value > 0 }
 
+    val now = remember { java.util.Calendar.getInstance() }
+    val greeting = remember {
+        val hour = now.get(java.util.Calendar.HOUR_OF_DAY)
+        when {
+            hour < 12 -> "Good Morning"
+            hour < 17 -> "Good Afternoon"
+            else      -> "Good Evening"
+        }
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp),
+            .padding(horizontal = 20.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // ── Header ────────────────────────────────────────────────────────
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text(
+                    text = greeting,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = "FinKlar",
+                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold),
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Rounded.AccountBalance,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+        }
+
         if (smsSyncedBalance != null && totalSipAmount > 0.0 && smsSyncedBalance!! < totalSipAmount) {
             SipAlertCard(
                 smsSyncedBalance = smsSyncedBalance!!,
@@ -701,54 +748,113 @@ fun DashboardScreen(
             )
         }
 
+        // ── Net Balance card ──────────────────────────────────────────────────
         Card(
             shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(containerColor = Color.Transparent),
             modifier = Modifier.fillMaxWidth()
         ) {
-            val bgBrush = if (themeType == ThemeType.DYNAMIC) {
-                Brush.horizontalGradient(
-                    colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary)
-                )
-            } else {
-                Brush.horizontalGradient(
-                    colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.surfaceVariant)
-                )
-            }
-            
-            Column(
+            Box(
                 modifier = Modifier
-                    .background(bgBrush)
+                    .fillMaxWidth()
+                    .background(
+                        brush = Brush.linearGradient(
+                            colors = listOf(
+                                MaterialTheme.colorScheme.primary,
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.85f),
+                                MaterialTheme.colorScheme.secondary.copy(alpha = 0.9f)
+                            )
+                        ),
+                        shape = RoundedCornerShape(24.dp)
+                    )
                     .padding(24.dp)
             ) {
-                Text(
-                    text = "Net Balance".translate(language),
-                    color = Color.White.copy(alpha = 0.7f),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Text(
-                    text = "${currency.symbol}${String.format("%,.2f", netBalance)}",
-                    color = Color.White,
-                    style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
-                    modifier = Modifier.padding(vertical = 4.dp)
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Column {
-                        Text(text = "Total Credit".translate(language), color = Color.White.copy(alpha = 0.6f), style = MaterialTheme.typography.bodySmall)
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.ArrowDownward, contentDescription = "Credit", tint = AccentEmerald, modifier = Modifier.size(16.dp))
-                            Text(text = "${currency.symbol}${String.format("%,.0f", creditSum)}", color = Color.White, fontWeight = FontWeight.Bold)
-                        }
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Rounded.AccountBalanceWallet,
+                            contentDescription = null,
+                            tint = Color.White.copy(alpha = 0.8f),
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Net Balance".translate(language),
+                            color = Color.White.copy(alpha = 0.85f),
+                            style = MaterialTheme.typography.labelLarge
+                        )
                     }
-                    Column {
-                        Text(text = "Total Debit".translate(language), color = Color.White.copy(alpha = 0.6f), style = MaterialTheme.typography.bodySmall)
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.ArrowUpward, contentDescription = "Debit", tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(16.dp))
-                            Text(text = "${currency.symbol}${String.format("%,.0f", debitSum)}", color = Color.White, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "${currency.symbol}${String.format("%,.2f", netBalance)}",
+                        color = Color.White,
+                        style = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.ExtraBold)
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
+                    // Credit / Debit stat row
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        // Credit chip
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(14.dp))
+                                .clickable { showCreditDialog = true }
+                                .background(Color.White.copy(alpha = 0.15f))
+                                .padding(horizontal = 12.dp, vertical = 10.dp)
+                        ) {
+                            Column {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(20.dp)
+                                            .background(Color(0xFF34A853), CircleShape),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(Icons.Default.ArrowDownward, contentDescription = null, tint = Color.White, modifier = Modifier.size(12.dp))
+                                    }
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text("Credit", color = Color.White.copy(alpha = 0.75f), style = MaterialTheme.typography.labelSmall)
+                                }
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "${currency.symbol}${String.format("%,.0f", creditSum)}",
+                                    color = Color.White,
+                                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                                )
+                            }
+                        }
+                        // Debit chip
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(14.dp))
+                                .clickable { showDebitDialog = true }
+                                .background(Color.White.copy(alpha = 0.15f))
+                                .padding(horizontal = 12.dp, vertical = 10.dp)
+                        ) {
+                            Column {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(20.dp)
+                                            .background(Color(0xFFEA4335), CircleShape),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(Icons.Default.ArrowUpward, contentDescription = null, tint = Color.White, modifier = Modifier.size(12.dp))
+                                    }
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text("Debit", color = Color.White.copy(alpha = 0.75f), style = MaterialTheme.typography.labelSmall)
+                                }
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "${currency.symbol}${String.format("%,.0f", debitSum)}",
+                                    color = Color.White,
+                                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                                )
+                            }
                         }
                     }
                 }
@@ -756,65 +862,166 @@ fun DashboardScreen(
         }
 
         if (confirmedTx.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("No confirmed transactions recorded yet.\nGo to Wallet tab or simulate SMS alerts!".translate(language), textAlign = TextAlign.Center)
-            }
-        } else {
-            InteractiveBarChart(
-                creditValues = listOf(creditSum * 0.9, creditSum, creditSum * 0.95),
-                debitValues = listOf(debitSum * 0.8, debitSum * 0.9, debitSum),
-                labels = listOf("April", "May", "June"),
-                currencySymbol = currency.symbol,
+            Card(
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
                 modifier = Modifier.fillMaxWidth()
-            )
-
-            if (categoryTotals.isNotEmpty()) {
-                Card(
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "Category Breakdown".translate(language),
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                            modifier = Modifier.align(Alignment.Start).padding(bottom = 16.dp)
-                        )
-                        
-                        AnimatedDonutChart(
-                            inputs = categoryTotals,
-                            currencySymbol = currency.symbol,
-                            modifier = Modifier.fillMaxWidth().height(220.dp)
-                        )
-                        
-                        Spacer(modifier = Modifier.height(16.dp))
-                        
-                        FlowRow(
-                            modifier = Modifier.fillMaxWidth(),
-                            mainAxisSpacing = 8.dp,
-                            crossAxisSpacing = 8.dp
-                        ) {
-                            categoryTotals.forEach { cat ->
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.padding(vertical = 2.dp)
-                                ) {
-                                    Box(modifier = Modifier.size(12.dp).background(cat.color, CircleShape))
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(text = cat.description, style = MaterialTheme.typography.bodySmall)
-                                }
-                            }
-                        }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Icon(Icons.Rounded.Inbox, contentDescription = null, modifier = Modifier.size(40.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f))
+                        Text("No transactions yet", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("Tap Scan SMS to import from your bank messages", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f), textAlign = TextAlign.Center)
                     }
                 }
             }
+        } else {
+            val recentTx = remember(confirmedTx) {
+                confirmedTx.sortedByDescending { it.date }.take(5)
+            }
+
+            Text(
+                text = "Recent Transactions".translate(language),
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.onBackground
+            )
+
+            recentTx.forEach { tx ->
+                TransactionRow(
+                    tx = tx,
+                    currency = currency,
+                    onClick = { }
+                )
+            }
+        }
+
+        if (showCreditDialog) {
+            FilteredTransactionListDialog(
+                title = "Credit Transactions".translate(language),
+                isIncome = true,
+                transactions = transactions,
+                currency = currency,
+                language = language,
+                onDismiss = { showCreditDialog = false }
+            )
+        }
+
+        if (showDebitDialog) {
+            FilteredTransactionListDialog(
+                title = "Debit Transactions".translate(language),
+                isIncome = false,
+                transactions = transactions,
+                currency = currency,
+                language = language,
+                onDismiss = { showDebitDialog = false }
+            )
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FilteredTransactionListDialog(
+    title: String,
+    isIncome: Boolean,
+    transactions: List<Transaction>,
+    currency: CurrencyType,
+    language: LanguageType,
+    onDismiss: () -> Unit
+) {
+    var filterAllTime by remember { mutableStateOf(false) }
+    
+    val currentCalendar = remember { java.util.Calendar.getInstance() }
+    val currentYear = currentCalendar.get(java.util.Calendar.YEAR)
+    val currentMonth = currentCalendar.get(java.util.Calendar.MONTH)
+
+    val filteredTransactions = remember(transactions, filterAllTime) {
+        transactions.filter { tx ->
+            if (tx.isIncome == isIncome && tx.status == TransactionStatus.CONFIRMED) {
+                if (filterAllTime) {
+                    true
+                } else {
+                    val txCal = java.util.Calendar.getInstance().apply { timeInMillis = tx.date }
+                    txCal.get(java.util.Calendar.YEAR) == currentYear && txCal.get(java.util.Calendar.MONTH) == currentMonth
+                }
+            } else {
+                false
+            }
+        }.sortedByDescending { it.date }
+    }
+
+    val monthName = remember {
+        java.text.SimpleDateFormat("MMMM yyyy", java.util.Locale.getDefault()).format(java.util.Date())
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Close".translate(language))
+            }
+        },
+        title = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = if (filterAllTime) title else "$title - $monthName",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                FilterChip(
+                    selected = filterAllTime,
+                    onClick = { filterAllTime = !filterAllTime },
+                    label = { Text("All Time".translate(language), fontSize = 11.sp) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                        selectedLabelColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+            }
+        },
+        text = {
+            if (filteredTransactions.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = if (filterAllTime) "No transactions found.".translate(language) else "No transactions in $monthName.".translate(language),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            } else {
+                androidx.compose.foundation.lazy.LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 400.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(filteredTransactions) { tx ->
+                        TransactionRow(
+                            tx = tx,
+                            currency = currency,
+                            onClick = {}
+                        )
+                    }
+                }
+            }
+        },
+        shape = RoundedCornerShape(24.dp)
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -826,7 +1033,6 @@ fun TransactionsScreen(
     val transactions by viewModel.allTransactions.collectAsState()
     val currency by viewModel.currency.collectAsState()
     val language by viewModel.language.collectAsState()
-    val lastWalletClearTimestamp by viewModel.lastWalletClearTimestamp.collectAsState()
     
     val context = androidx.compose.ui.platform.LocalContext.current
     val isSmsScanning by viewModel.isSmsScanning.collectAsState()
@@ -888,8 +1094,8 @@ fun TransactionsScreen(
         }
     }
 
-    val filteredTransactions = remember(transactions, lastWalletClearTimestamp, searchQuery, selectedStatusFilter, sortBy, sortAscending) {
-        var list = transactions.filter { it.date > lastWalletClearTimestamp }
+    val filteredTransactions = remember(transactions, searchQuery, selectedStatusFilter, sortBy, sortAscending) {
+        var list = transactions
 
         // 1. Status Filter
         if (selectedStatusFilter != "All") {
@@ -924,36 +1130,66 @@ fun TransactionsScreen(
         list
     }
 
-    var walletActiveTab by remember { mutableStateOf(0) }
-
     Column(modifier = modifier.fillMaxSize()) {
-        TabRow(
-            selectedTabIndex = walletActiveTab,
-            containerColor = Color.Transparent,
-            contentColor = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+        // Header row with title and Scan SMS button
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Tab(
-                selected = walletActiveTab == 0,
-                onClick = { walletActiveTab = 0 },
-                text = { Text("History", fontWeight = FontWeight.Bold) }
+            Text(
+                text = "Transaction History",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.onBackground
             )
-            Tab(
-                selected = walletActiveTab == 1,
-                onClick = { walletActiveTab = 1 },
-                text = { Text("SMS Review", fontWeight = FontWeight.Bold) }
-            )
+            Button(
+                onClick = {
+                    val permission = android.Manifest.permission.READ_SMS
+                    val granted = androidx.core.content.ContextCompat.checkSelfPermission(context, permission) ==
+                        android.content.pm.PackageManager.PERMISSION_GRANTED
+                    if (granted) {
+                        viewModel.scanSmsInbox { count, _ ->
+                            scanStatusMessage = "Scan complete. Synced $count new transactions."
+                        }
+                    } else {
+                        smsPermissionLauncher.launch(permission)
+                    }
+                },
+                enabled = !isSmsScanning,
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                ),
+                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
+            ) {
+                if (isSmsScanning) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp,
+                        color = Color.White
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Scanning...", fontSize = 13.sp)
+                } else {
+                    Icon(
+                        imageVector = Icons.Rounded.Sms,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Scan SMS", fontSize = 13.sp)
+                }
+            }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        if (walletActiveTab == 0) {
-            Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp)
-                ) {
+        Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp)
+            ) {
             if (smsSyncedBalance != null) {
                 Card(
                     shape = RoundedCornerShape(16.dp),
@@ -1266,10 +1502,7 @@ fun TransactionsScreen(
             }
             }
         }
-    } else {
-        SmsReviewScreen(viewModel = viewModel, modifier = Modifier.weight(1f))
     }
-}
 
     if (showScanChoiceDialog) {
         Dialog(onDismissRequest = { showScanChoiceDialog = false }) {
@@ -1399,26 +1632,26 @@ fun TransactionRow(
     onConfirm: (() -> Unit)? = null,
     onReject: (() -> Unit)? = null
 ) {
+    val accentColor = if (tx.isIncome) Color(0xFF34A853) else Color(0xFFEA4335)
     Card(
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (tx.status == TransactionStatus.PENDING) 
-                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f) 
-            else 
-                MaterialTheme.colorScheme.surface
-        ),
-        border = BorderStroke(
-            width = 1.dp, 
-            color = if (tx.status == TransactionStatus.PENDING) 
-                MaterialTheme.colorScheme.primary.copy(alpha = 0.5f) 
-            else 
-                MaterialTheme.colorScheme.outlineVariant
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        modifier = Modifier.fillMaxWidth().clickable { onClick() }
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
+        Row(modifier = Modifier.fillMaxWidth()) {
+            // Colored left accent bar
+            Box(
+                modifier = Modifier
+                    .width(4.dp)
+                    .fillMaxHeight()
+                    .background(
+                        color = if (tx.status == TransactionStatus.PENDING) MaterialTheme.colorScheme.primary
+                                else accentColor,
+                        shape = RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
+                    )
+            )
+        Column(modifier = Modifier.padding(12.dp).weight(1f)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -1430,11 +1663,8 @@ fun TransactionRow(
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(40.dp)
-                            .background(
-                                getCategoryColor(tx.category).copy(alpha = 0.15f),
-                                CircleShape
-                            ),
+                            .size(42.dp)
+                            .background(getCategoryColor(tx.category).copy(alpha = 0.12f), RoundedCornerShape(12.dp)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -1444,12 +1674,12 @@ fun TransactionRow(
                             modifier = Modifier.size(20.dp)
                         )
                     }
-                    Spacer(modifier = Modifier.width(12.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
                     Column {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 text = tx.merchant,
-                                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier.weight(1f, fill = false)
@@ -1479,21 +1709,23 @@ fun TransactionRow(
                             }
                         }
                         Text(
-                            text = tx.notes.ifEmpty { TransactionCategory.values().find { it.name == tx.category }?.displayName ?: tx.category },
+                            text = SimpleDateFormat("dd MMM, hh:mm a", java.util.Locale.getDefault()).format(java.util.Date(tx.date)),
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                         )
                     }
                 }
                 
-                Column(
-                    horizontalAlignment = Alignment.End,
-                    modifier = Modifier.weight(1f)
-                ) {
+                Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        text = "${if (tx.isIncome) "Credit " else "Debit "}${currency.symbol}${tx.amount}",
+                        text = "${if (tx.isIncome) "+" else "-"}${currency.symbol}${String.format("%,.2f", tx.amount)}",
                         style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-                        color = if (tx.isIncome) AccentEmerald else MaterialTheme.colorScheme.onSurface
+                        color = accentColor
+                    )
+                    Text(
+                        text = if (tx.isIncome) "Credit" else "Debit",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = accentColor.copy(alpha = 0.7f)
                     )
                 }
             }
@@ -1530,6 +1762,7 @@ fun TransactionRow(
                 }
             }
         }
+        } // end colored-bar Row
     }
 }
 
@@ -2051,6 +2284,7 @@ fun SafeSpendScreen(
     val language by viewModel.language.collectAsState()
     val transactions by viewModel.allTransactions.collectAsState()
     val smsSyncedBalance by viewModel.smsSyncedBalance.collectAsState()
+    val setZeroTimestamp by viewModel.setZeroTimestamp.collectAsState()
 
     var isSetupExpanded by remember { mutableStateOf(false) }
 
@@ -2068,8 +2302,8 @@ fun SafeSpendScreen(
     val totalDaysInMonth = calendar.getActualMaximum(java.util.Calendar.DAY_OF_MONTH)
     val daysRemaining = totalDaysInMonth - todayDay + 1
 
-    val confirmedTx = remember(transactions) {
-        transactions.filter { it.status == TransactionStatus.CONFIRMED }
+    val confirmedTx = remember(transactions, setZeroTimestamp) {
+        transactions.filter { it.status == TransactionStatus.CONFIRMED && it.date > setZeroTimestamp }
     }
 
     val calculatedIncome = remember(transactions) {
@@ -2882,99 +3116,13 @@ fun SettingsScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text("Visual Themes".translate(language), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
-        
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                border = BorderStroke(
-                    width = if (themeType == ThemeType.DYNAMIC) 2.dp else 1.dp,
-                    color = if (themeType == ThemeType.DYNAMIC) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
-                ),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                modifier = Modifier
-                    .weight(1f)
-                    .clickable { viewModel.updateTheme(ThemeType.DYNAMIC) }
-            ) {
-                Column(modifier = Modifier.padding(12.dp)) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    ) {
-                        Box(modifier = Modifier.size(16.dp).background(DynamicLightPrimary, CircleShape))
-                        Box(modifier = Modifier.size(16.dp).background(DynamicLightSecondary, CircleShape))
-                        Box(modifier = Modifier.size(16.dp).background(DynamicLightTertiary, CircleShape))
-                    }
-                    Text("Dynamic Theme".translate(language), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
-                    Text("Vibrant gradients, rounded cards & playful transitions.".translate(language), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
-                }
-            }
- 
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                border = BorderStroke(
-                    width = if (themeType == ThemeType.PROFESSIONAL) 2.dp else 1.dp,
-                    color = if (themeType == ThemeType.PROFESSIONAL) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
-                ),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                modifier = Modifier
-                    .weight(1f)
-                    .clickable { viewModel.updateTheme(ThemeType.PROFESSIONAL) }
-            ) {
-                Column(modifier = Modifier.padding(12.dp)) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    ) {
-                        Box(modifier = Modifier.size(16.dp).background(ProfLightPrimary, CircleShape))
-                        Box(modifier = Modifier.size(16.dp).background(ProfLightSecondary, CircleShape))
-                        Box(modifier = Modifier.size(16.dp).background(ProfLightTertiary, CircleShape))
-                    }
-                    Text("Professional Theme".translate(language), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
-                    Text("Elegant borders, dark charcoal & executive dashboard designs.".translate(language), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
-                }
-            }
-        }
- 
-        Text("Accent Color".translate(language), style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceAround
-        ) {
-            val colors = listOf(AccentEmerald, AccentOrange, AccentIndigo, AccentCrimson, AccentSky)
-            colors.forEachIndexed { index, color ->
-                val selected = accentIndex == index
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .background(color, CircleShape)
-                        .border(
-                            width = if (selected) 3.dp else 0.dp,
-                            color = MaterialTheme.colorScheme.onBackground,
-                            shape = CircleShape
-                        )
-                        .clickable {
-                            viewModel.updateAccentIndex(if (selected) -1 else index)
-                        }
-                )
-            }
-        }
- 
-        Divider()
+
  
         Text("Display Mode".translate(language), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            FilterChip(
-                selected = isDark == null,
-                onClick = { viewModel.updateDarkMode(null) },
-                label = { Text("System Theme".translate(language)) }
-            )
             FilterChip(
                 selected = isDark == false,
                 onClick = { viewModel.updateDarkMode(false) },
@@ -3051,46 +3199,6 @@ fun SettingsScreen(
 
         Divider()
 
-        Text("AI Configuration".translate(language), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
-        
-        var tempGeminiKey by remember(geminiApiKey) { mutableStateOf(geminiApiKey) }
-        var isGeminiKeyVisible by remember { mutableStateOf(false) }
-
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            OutlinedTextField(
-                value = tempGeminiKey,
-                onValueChange = { tempGeminiKey = it },
-                label = { Text("Gemini API Key".translate(language)) },
-                visualTransformation = if (isGeminiKeyVisible) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
-                trailingIcon = {
-                    IconButton(onClick = { isGeminiKeyVisible = !isGeminiKeyVisible }) {
-                        Icon(
-                            imageVector = if (isGeminiKeyVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                            contentDescription = "Toggle Visibility"
-                        )
-                    }
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
-            )
-
-            Button(
-                onClick = {
-                    viewModel.updateGeminiApiKey(tempGeminiKey)
-                    android.widget.Toast.makeText(context, "Gemini API Key updated successfully!".translate(language), android.widget.Toast.LENGTH_SHORT).show()
-                },
-                modifier = Modifier.align(Alignment.End),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text("Save Key".translate(language))
-            }
-        }
-
-        Divider()
-
         Text("Maintenance & Reset".translate(language), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
 
         Row(
@@ -3100,7 +3208,7 @@ fun SettingsScreen(
         ) {
             Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
                 Text("Clear Wallet Transactions".translate(language), fontWeight = FontWeight.Bold)
-                Text("Hides transactions from wallet view. Preserves data for charts and calculators.".translate(language), style = MaterialTheme.typography.bodySmall)
+                Text("Permanently deletes all transactions from the wallet. This resets your balance and data.".translate(language), style = MaterialTheme.typography.bodySmall)
             }
             OutlinedButton(
                 onClick = {
@@ -3112,6 +3220,81 @@ fun SettingsScreen(
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text("Clear Wallet".translate(language))
+            }
+        }
+
+        Divider()
+
+        val setZeroTimestamp by viewModel.setZeroTimestamp.collectAsState()
+        val formattedZeroDate = remember(setZeroTimestamp) {
+            if (setZeroTimestamp > 0L) {
+                val date = java.util.Date(setZeroTimestamp)
+                val sdf = java.text.SimpleDateFormat("dd MMM yyyy", java.util.Locale.getDefault())
+                sdf.format(date)
+            } else {
+                "Not Set".translate(language)
+            }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+                Text("Set Zero Point".translate(language), fontWeight = FontWeight.Bold)
+                Text("Start a new count of credit/debit from a chosen date, discarding earlier sums but keeping transaction history.".translate(language), style = MaterialTheme.typography.bodySmall)
+                if (setZeroTimestamp > 0L) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Current Zero Point: $formattedZeroDate".translate(language),
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (setZeroTimestamp > 0L) {
+                    OutlinedButton(
+                        onClick = {
+                            viewModel.saveSetZeroTimestamp(0L)
+                            android.widget.Toast.makeText(context, "Zero point reset successfully!".translate(language), android.widget.Toast.LENGTH_SHORT).show()
+                        },
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Reset".translate(language))
+                    }
+                }
+                Button(
+                    onClick = {
+                        val calendar = java.util.Calendar.getInstance()
+                        if (setZeroTimestamp > 0L) {
+                            calendar.timeInMillis = setZeroTimestamp
+                        }
+                        android.app.DatePickerDialog(
+                            context,
+                            { _, year, month, dayOfMonth ->
+                                val selectedCal = java.util.Calendar.getInstance().apply {
+                                    set(java.util.Calendar.YEAR, year)
+                                    set(java.util.Calendar.MONTH, month)
+                                    set(java.util.Calendar.DAY_OF_MONTH, dayOfMonth)
+                                    set(java.util.Calendar.HOUR_OF_DAY, 0)
+                                    set(java.util.Calendar.MINUTE, 0)
+                                    set(java.util.Calendar.SECOND, 0)
+                                    set(java.util.Calendar.MILLISECOND, 0)
+                                }
+                                viewModel.saveSetZeroTimestamp(selectedCal.timeInMillis)
+                                android.widget.Toast.makeText(context, "Zero point set successfully!".translate(language), android.widget.Toast.LENGTH_SHORT).show()
+                            },
+                            calendar.get(java.util.Calendar.YEAR),
+                            calendar.get(java.util.Calendar.MONTH),
+                            calendar.get(java.util.Calendar.DAY_OF_MONTH)
+                        ).show()
+                    },
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("Set 0".translate(language))
+                }
             }
         }
     }
@@ -3300,9 +3483,10 @@ fun FinancialToolsScreen(
     val todayDay = calendar.get(java.util.Calendar.DAY_OF_MONTH)
     val maxDays = calendar.getActualMaximum(java.util.Calendar.DAY_OF_MONTH)
 
+    val setZeroTimestamp by viewModel.setZeroTimestamp.collectAsState()
     val transactions by viewModel.allTransactions.collectAsState()
-    val walletBalance = remember(transactions) {
-        val confirmed = transactions.filter { it.status == TransactionStatus.CONFIRMED }
+    val walletBalance = remember(transactions, setZeroTimestamp) {
+        val confirmed = transactions.filter { it.status == TransactionStatus.CONFIRMED && it.date > setZeroTimestamp }
         confirmed.filter { it.isIncome }.sumOf { it.amount } - confirmed.filter { !it.isIncome }.sumOf { it.amount }
     }
     val currentBalance = smsSyncedBalance ?: walletBalance
@@ -3464,6 +3648,20 @@ fun FinancialToolsScreen(
                     )
                 }
             }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                ToolCard(
+                    title = "Statistics",
+                    subtitle = "View bar graph and pie chart analysis",
+                    icon = Icons.Rounded.BarChart,
+                    onClick = { activeTool = "Statistics" },
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(modifier = Modifier.weight(1f))
+            }
         }
     } else {
         Column(
@@ -3485,6 +3683,7 @@ fun FinancialToolsScreen(
                         "Goals" -> "Savings Goals".translate(language)
                         "Investments" -> "Investment Portfolio".translate(language)
                         "Splitwise" -> "Splitwise".translate(language)
+                        "Statistics" -> "Statistics".translate(language)
                         else -> ""
                     },
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
@@ -3497,6 +3696,125 @@ fun FinancialToolsScreen(
                     "Goals" -> GoalsScreen(viewModel = viewModel)
                     "Investments" -> InvestmentsScreen(viewModel = viewModel)
                     "Splitwise" -> SplitwiseScreen(viewModel = viewModel)
+                    "Statistics" -> StatisticsScreen(viewModel = viewModel)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun StatisticsScreen(
+    viewModel: FinanceViewModel,
+    modifier: Modifier = Modifier
+) {
+    val transactions by viewModel.allTransactions.collectAsState()
+    val currency by viewModel.currency.collectAsState()
+    val language by viewModel.language.collectAsState()
+    val setZeroTimestamp by viewModel.setZeroTimestamp.collectAsState()
+
+    val confirmedTx = remember(transactions, setZeroTimestamp) {
+        transactions.filter { it.status == TransactionStatus.CONFIRMED && it.date > setZeroTimestamp }
+    }
+    val creditSum = remember(confirmedTx) { confirmedTx.filter { it.isIncome }.sumOf { it.amount } }
+    val debitSum = remember(confirmedTx) { confirmedTx.filter { !it.isIncome }.sumOf { it.amount } }
+
+    val categoryTotals = remember(confirmedTx, language) {
+        confirmedTx.filter { !it.isIncome }
+            .groupBy { it.category }
+            .map { (cat, list) ->
+                val sum = list.sumOf { it.amount }
+                PieChartInput(
+                    color = getCategoryColor(cat),
+                    value = sum,
+                    description = TransactionCategory.values().find { it.name == cat }?.displayName?.translate(language) ?: cat.translate(language)
+                )
+            }.filter { it.value > 0 }
+    }
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        if (confirmedTx.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(32.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "No transaction data available to show statistics.".translate(language),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        } else {
+            Card(
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Spending Overview".translate(language),
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                    InteractiveBarChart(
+                        creditValues = listOf(creditSum * 0.9, creditSum, creditSum * 0.95),
+                        debitValues = listOf(debitSum * 0.8, debitSum * 0.9, debitSum),
+                        labels = listOf("April", "May", "June"),
+                        currencySymbol = currency.symbol,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+
+            if (categoryTotals.isNotEmpty()) {
+                Card(
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "Category Breakdown".translate(language),
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                            modifier = Modifier.align(Alignment.Start).padding(bottom = 16.dp)
+                        )
+                        
+                        AnimatedDonutChart(
+                            inputs = categoryTotals,
+                            currencySymbol = currency.symbol,
+                            modifier = Modifier.fillMaxWidth().height(220.dp)
+                        )
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            mainAxisSpacing = 8.dp,
+                            crossAxisSpacing = 8.dp
+                        ) {
+                            categoryTotals.forEach { cat ->
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(vertical = 2.dp)
+                                ) {
+                                    Box(modifier = Modifier.size(12.dp).background(cat.color, CircleShape))
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(text = cat.description, style = MaterialTheme.typography.bodySmall)
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

@@ -575,7 +575,7 @@ fun PinKeyboardGate(
             modifier = Modifier.padding(top = 60.dp)
         ) {
             Text(
-                text = "ANTIGRAVITY",
+                text = "FINKLAR",
                 style = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.Black,
                     letterSpacing = 4.sp

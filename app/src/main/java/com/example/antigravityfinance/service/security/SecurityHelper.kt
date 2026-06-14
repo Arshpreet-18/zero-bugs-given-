@@ -301,6 +301,17 @@ class SecurityHelper(private val context: Context) {
         return sharedPrefs.getLong("last_wallet_clear_timestamp", 0L)
     }
 
+    fun saveSetZeroTimestamp(timestamp: Long) {
+        sharedPrefs.edit().putLong("set_zero_timestamp", timestamp).apply()
+    }
+    fun getSetZeroTimestamp(): Long {
+        return sharedPrefs.getLong("set_zero_timestamp", 0L)
+    }
+
+    fun clearSyncedBalance() {
+        sharedPrefs.edit().remove("synced_sms_balance").apply()
+    }
+
     // Trusted SMS Senders
     fun saveTrustedSender(senderId: String) {
         val current = getTrustedSenders().toMutableSet()
@@ -356,5 +367,46 @@ class SecurityHelper(private val context: Context) {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    // User Registration & Authentication Storage
+    fun saveUserRegistration(name: String, email: String, phone: String) {
+        val encryptedName = encrypt(name)
+        val encryptedEmail = encrypt(email)
+        val encryptedPhone = encrypt(phone)
+        sharedPrefs.edit()
+            .putString("registered_name", encryptedName)
+            .putString("registered_email", encryptedEmail)
+            .putString("registered_phone", encryptedPhone)
+            .putBoolean("user_registered", true)
+            .apply()
+    }
+
+    fun isRegistered(): Boolean {
+        return sharedPrefs.getBoolean("user_registered", false)
+    }
+
+    fun getUserName(): String {
+        val enc = sharedPrefs.getString("registered_name", null) ?: return ""
+        return decrypt(enc)
+    }
+
+    fun getUserEmail(): String {
+        val enc = sharedPrefs.getString("registered_email", null) ?: return ""
+        return decrypt(enc)
+    }
+
+    fun getUserPhone(): String {
+        val enc = sharedPrefs.getString("registered_phone", null) ?: return ""
+        return decrypt(enc)
+    }
+
+    fun clearUserRegistration() {
+        sharedPrefs.edit()
+            .remove("registered_name")
+            .remove("registered_email")
+            .remove("registered_phone")
+            .remove("user_registered")
+            .apply()
     }
 }

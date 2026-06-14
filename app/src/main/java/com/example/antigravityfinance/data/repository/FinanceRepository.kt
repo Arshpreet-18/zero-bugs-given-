@@ -43,6 +43,13 @@ class TransactionRepository(
         }
     }
 
+    suspend fun deleteAllTransactions() {
+        transactionDao.deleteAllTransactions()
+        budgetDao.getAllBudgets().first().forEach { budget ->
+            budgetDao.update(budget.copy(spentAmount = 0.0))
+        }
+    }
+
     suspend fun confirmTransaction(id: Int) {
         val entity = transactionDao.getTransactionById(id)
         if (entity != null && entity.status != "CONFIRMED") {

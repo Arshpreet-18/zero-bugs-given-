@@ -9,6 +9,9 @@ import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
@@ -44,6 +47,7 @@ fun MainScreen(
         darkTheme = isDarkPref ?: androidx.compose.foundation.isSystemInDarkTheme(),
         customAccent = customAccent
     ) {
+        val isRegistered by viewModel.isRegistered.collectAsState()
         val isPinSet by viewModel.isPinSet.collectAsState()
         val isAuthRequired by viewModel.isAuthRequired.collectAsState()
         val pinError by viewModel.pinError.collectAsState()
@@ -52,7 +56,9 @@ fun MainScreen(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
         ) {
-            if (isPinSet && isAuthRequired) {
+            if (!isRegistered) {
+                OnboardingScreen(viewModel = viewModel)
+            } else if (isPinSet && isAuthRequired) {
                 // Secure Authentication Lock Gate
                 PinKeyboardGate(
                     isPinSet = true,
@@ -79,7 +85,15 @@ fun MainWorkspace(viewModel: FinanceViewModel) {
         bottomBar = {
             NavigationBar(
                 containerColor = MaterialTheme.colorScheme.surface,
-                tonalElevation = 8.dp
+                tonalElevation = 0.dp,
+                modifier = androidx.compose.ui.Modifier.drawBehind {
+                    drawLine(
+                        color = androidx.compose.ui.graphics.Color(0xFFE8EAED),
+                        start = androidx.compose.ui.geometry.Offset(0f, 0f),
+                        end = androidx.compose.ui.geometry.Offset(size.width, 0f),
+                        strokeWidth = 1.dp.toPx()
+                    )
+                }
             ) {
                 visibleTabs.forEach { tab ->
                     NavigationBarItem(
@@ -90,7 +104,9 @@ fun MainWorkspace(viewModel: FinanceViewModel) {
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = MaterialTheme.colorScheme.primary,
                             selectedTextColor = MaterialTheme.colorScheme.primary,
-                            indicatorColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
                         )
                     )
                 }
