@@ -26,14 +26,15 @@ object AiAssistantService {
         investments: List<Investment>,
         apiKey: String?,
         setZeroTimestamp: Long,
-        currencySymbol: String = "₹"
+        currencySymbol: String = "₹",
+        languageCode: String = "en"
     ): String {
         val cleanKey = apiKey?.trim() ?: ""
         if (cleanKey.isBlank()) {
             return "Gemini API key is not configured. Please go to Settings and set a valid Gemini API Key."
         }
         
-        return askGeminiDirect(query, transactions, budgets, goals, investments, cleanKey, setZeroTimestamp, currencySymbol)
+        return askGeminiDirect(query, transactions, budgets, goals, investments, cleanKey, setZeroTimestamp, currencySymbol, languageCode)
     }
 
     private suspend fun askGeminiDirect(
@@ -44,7 +45,8 @@ object AiAssistantService {
         investments: List<Investment>,
         apiKey: String,
         setZeroTimestamp: Long,
-        currencySymbol: String
+        currencySymbol: String,
+        languageCode: String
     ): String = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
         try {
             // Format context
@@ -66,6 +68,12 @@ object AiAssistantService {
                 "Note: The user has reset the debit/credit start date to ${Date(setZeroTimestamp)}. Any calculations of total balance, total debits, or total credits must only sum transactions dated after ${Date(setZeroTimestamp)}. Discard earlier transactions for sums, but note they still appear in history."
             } else {
                 ""
+            }
+
+            val languageInstruction = if (languageCode == "hi") {
+                "6. RESPOND ENTIRELY IN HINDI (हिंदी). All your financial tips, analysis, explanations, responses, greetings, and calculations must be written in the Hindi language only."
+            } else {
+                "6. Respond in English."
             }
 
             val systemPrompt = """
@@ -92,6 +100,7 @@ object AiAssistantService {
                 3. Offer actual tips and spot abnormal spending or overruns when requested.
                 4. Use the correct currency in responses.
                 5. If you do not know or data is empty, mention that you're ready to help once transactions are logged.
+                $languageInstruction
             """.trimIndent()
 
             val jsonRequest = JSONObject().apply {

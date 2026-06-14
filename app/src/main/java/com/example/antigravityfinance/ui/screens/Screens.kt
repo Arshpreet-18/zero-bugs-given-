@@ -51,6 +51,27 @@ object Translator {
             "Financial Tools" to "Financial Tools",
             "Settings" to "Settings",
             
+            "Good Morning ☀️" to "Good Morning ☀️",
+            "Good Afternoon 🌤️" to "Good Afternoon 🌤️",
+            "Good Evening 🌙" to "Good Evening 🌙",
+            
+            "Select App Language" to "Select App Language",
+            "Choose your preferred language for the interface and AI chatbot assistant." to "Choose your preferred language for the interface and AI chatbot assistant.",
+            "Send OTP & Continue" to "Send OTP & Continue",
+            "Back" to "Back",
+            "Enter Verification Code" to "Enter Verification Code",
+            "We sent a 6-digit OTP code to" to "We sent a 6-digit OTP code to",
+            "Please enter it below to confirm your phone number." to "Please enter it below to confirm your phone number.",
+            "6-Digit OTP Code" to "6-Digit OTP Code",
+            "Resend Code" to "Resend Code",
+            "Verify & Continue" to "Verify & Continue",
+            "OTP Sent successfully!" to "OTP Sent successfully!",
+            "OTP Resent successfully" to "OTP Resent successfully",
+            "Registration Verified!" to "Registration Verified!",
+            "Error:" to "Error:",
+            "Try bypass code '123456'." to "Try bypass code '123456'.",
+            "OTP must be exactly 6 digits" to "OTP must be exactly 6 digits",
+            
             "Net Balance" to "Net Balance",
             "Monthly Income" to "Monthly Income",
             "Monthly Expense" to "Monthly Expense",
@@ -153,6 +174,27 @@ object Translator {
             "AI Chat" to "एआई चैट",
             "Financial Tools" to "वित्तीय साधन",
             "Settings" to "सेटिंग्स",
+            
+            "Good Morning ☀️" to "सुप्रभात ☀️",
+            "Good Afternoon 🌤️" to "शुभ दोपहर 🌤️",
+            "Good Evening 🌙" to "शुभ संध्या 🌙",
+            
+            "Select App Language" to "ऐप की भाषा चुनें",
+            "Choose your preferred language for the interface and AI chatbot assistant." to "इंटरफ़ेस और एआई चैटबॉट सहायक के लिए अपनी पसंदीदा भाषा चुनें।",
+            "Send OTP & Continue" to "ओटीपी भेजें और जारी रखें",
+            "Back" to "पीछे",
+            "Enter Verification Code" to "सत्यापन कोड दर्ज करें",
+            "We sent a 6-digit OTP code to" to "हमने 6 अंकों का ओटीपी कोड भेजा है",
+            "Please enter it below to confirm your phone number." to "अपना फोन नंबर सत्यापित करने के लिए कृपया इसे नीचे दर्ज करें।",
+            "6-Digit OTP Code" to "6 अंकों का ओटीपी कोड",
+            "Resend Code" to "कोड पुनः भेजें",
+            "Verify & Continue" to "सत्यापित करें और जारी रखें",
+            "OTP Sent successfully!" to "ओटीपी सफलतापूर्वक भेजा गया!",
+            "OTP Resent successfully" to "ओटीपी सफलतापूर्वक पुनः भेजा गया",
+            "Registration Verified!" to "पंजीकरण सत्यापित हो गया!",
+            "Error:" to "त्रुटि:",
+            "Try bypass code '123456'." to "बायपास कोड '123456' आज़माएं।",
+            "OTP must be exactly 6 digits" to "ओटीपी ठीक 6 अंकों का होना चाहिए",
             
             "Net Balance" to "कुल जमा राशि",
             "Monthly Income" to "मासिक आय",
@@ -665,6 +707,7 @@ fun DashboardScreen(
     val language by viewModel.language.collectAsState()
     val smsSyncedBalance by viewModel.smsSyncedBalance.collectAsState()
     val investments by viewModel.investments.collectAsState()
+    val userName by viewModel.userName.collectAsState()
 
     var showCreditDialog by remember { mutableStateOf(false) }
     var showDebitDialog by remember { mutableStateOf(false) }
@@ -694,9 +737,9 @@ fun DashboardScreen(
     val greeting = remember {
         val hour = now.get(java.util.Calendar.HOUR_OF_DAY)
         when {
-            hour < 12 -> "Good Morning"
-            hour < 17 -> "Good Afternoon"
-            else      -> "Good Evening"
+            hour < 12 -> "Good Morning ☀️"
+            hour < 17 -> "Good Afternoon 🌤️"
+            else      -> "Good Evening 🌙"
         }
     }
 
@@ -715,12 +758,12 @@ fun DashboardScreen(
         ) {
             Column {
                 Text(
-                    text = greeting,
+                    text = greeting.translate(language),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = "FinKlar",
+                    text = userName.ifBlank { "FinKlar" },
                     style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold),
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -802,7 +845,7 @@ fun DashboardScreen(
                                 .weight(1f)
                                 .clip(RoundedCornerShape(14.dp))
                                 .clickable { showCreditDialog = true }
-                                .background(Color.Black.copy(alpha = 0.06f))
+                                .background(Color.White.copy(alpha = 0.45f))
                                 .padding(horizontal = 12.dp, vertical = 10.dp)
                         ) {
                             Column {
@@ -832,7 +875,7 @@ fun DashboardScreen(
                                 .weight(1f)
                                 .clip(RoundedCornerShape(14.dp))
                                 .clickable { showDebitDialog = true }
-                                .background(Color.Black.copy(alpha = 0.06f))
+                                .background(Color.White.copy(alpha = 0.45f))
                                 .padding(horizontal = 12.dp, vertical = 10.dp)
                         ) {
                             Column {

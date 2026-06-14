@@ -976,7 +976,8 @@ class FinanceViewModel(application: Application) : AndroidViewModel(application)
                 investments = investments.value,
                 apiKey = securityHelper.getGeminiApiKey(),
                 setZeroTimestamp = setZeroTimestamp.value,
-                currencySymbol = currency.value.symbol
+                currencySymbol = currency.value.symbol,
+                languageCode = language.value.code
             )
             _isAiThinking.value = false
             val aiMsg = ChatMessage(UUID.randomUUID().toString(), response, false)

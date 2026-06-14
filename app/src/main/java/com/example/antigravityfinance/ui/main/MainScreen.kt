@@ -83,12 +83,13 @@ fun MainWorkspace(viewModel: FinanceViewModel) {
 
     Scaffold(
         bottomBar = {
+            val outlineColor = MaterialTheme.colorScheme.outlineVariant
             NavigationBar(
                 containerColor = MaterialTheme.colorScheme.surface,
                 tonalElevation = 0.dp,
                 modifier = androidx.compose.ui.Modifier.drawBehind {
                     drawLine(
-                        color = androidx.compose.ui.graphics.Color(0xFFE8EAED),
+                        color = outlineColor,
                         start = androidx.compose.ui.geometry.Offset(0f, 0f),
                         end = androidx.compose.ui.geometry.Offset(size.width, 0f),
                         strokeWidth = 1.dp.toPx()

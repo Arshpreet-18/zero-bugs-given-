@@ -38,11 +38,36 @@ private val DynamicLightColorScheme = lightColorScheme(
     onErrorContainer    = Color(0xFF410001)
 )
 
-private val DynamicDarkColorScheme = DynamicLightColorScheme
+private val DynamicDarkColorScheme = darkColorScheme(
+    primary             = AppPrimaryColor,
+    onPrimary           = Color.Black,
+    primaryContainer    = Color(0xFF1E3A42),
+    onPrimaryContainer  = Color.White,
+    secondary           = AppPrimaryColor,
+    onSecondary         = Color.Black,
+    secondaryContainer  = Color(0xFF1E3A42),
+    onSecondaryContainer = Color.White,
+    tertiary            = AppPrimaryColor,
+    onTertiary          = Color.Black,
+    tertiaryContainer   = Color(0xFF1E3A42),
+    onTertiaryContainer = Color.White,
+    background          = Color(0xFF0D1117),
+    onBackground        = Color(0xFFE2E2E6),
+    surface             = Color(0xFF161B22),
+    onSurface           = Color(0xFFE2E2E6),
+    surfaceVariant      = Color(0xFF21262D),
+    onSurfaceVariant    = Color(0xFFC9D1D9),
+    outline             = Color(0xFF30363D),
+    outlineVariant      = Color(0xFF484F58),
+    error               = Color(0xFFCF6679),
+    onError             = Color.Black,
+    errorContainer      = Color(0xFF8C1D1D),
+    onErrorContainer    = Color(0xFFFDD8D8)
+)
 
 private val ProfessionalLightColorScheme = DynamicLightColorScheme
 
-private val ProfessionalDarkColorScheme = DynamicLightColorScheme
+private val ProfessionalDarkColorScheme = DynamicDarkColorScheme
 
 @Composable
 fun AntigravityFinanceTheme(

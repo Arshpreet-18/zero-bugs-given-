@@ -16,3 +16,7 @@ local.properties
 .env
 .kotlin/
 .idea/
+node_modules/
+firebase_backend/functions/node_modules/
+*test_twilio_otp.js
+package-lock.json
