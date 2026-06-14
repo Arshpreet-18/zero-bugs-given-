@@ -166,7 +166,9 @@ object Translator {
             "API Keys updated successfully!" to "API Keys updated successfully!",
             "Low Balance Alert: EMI" to "Low Balance Alert: EMI",
             "Low Balance Alert: SIP" to "Low Balance Alert: SIP",
-            "Domain Spend Percentage" to "Domain Spend Percentage"
+            "Domain Spend Percentage" to "Domain Spend Percentage",
+            "Privacy Policy" to "Privacy Policy",
+            "Close" to "Close"
         ),
         "hi" to mapOf(
             "Dashboard" to "डैशबोर्ड",
@@ -320,7 +322,9 @@ object Translator {
             "No EMI or SIP due" to "कोई ईएमआई या एसआईपी देय नहीं है",
             "EMI Payment" to "ईएमआई भुगतान",
             "SIP Commitment" to "एसआईपी प्रतिबद्धता",
-            "Day" to "दिन"
+            "Day" to "दिन",
+            "Privacy Policy" to "गोपनीयता नीति",
+            "Close" to "बंद करें"
         )
     )
 
@@ -746,6 +750,7 @@ fun DashboardScreen(
 
     var showCreditDialog by remember { mutableStateOf(false) }
     var showDebitDialog by remember { mutableStateOf(false) }
+    var showPrivacyDialog by remember { mutableStateOf(false) }
 
     val totalSipAmount = remember(investments) {
         investments.filter { it.type == "SIP" }.sumOf { it.investedAmount }
@@ -821,12 +826,13 @@ fun DashboardScreen(
             Box(
                 modifier = Modifier
                     .size(44.dp)
-                    .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
+                    .background(MaterialTheme.colorScheme.primaryContainer, CircleShape)
+                    .clickable { showPrivacyDialog = true },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    Icons.Rounded.AccountBalance,
-                    contentDescription = null,
+                    Icons.Rounded.HelpOutline,
+                    contentDescription = "Privacy Policy",
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(22.dp)
                 )
@@ -1090,6 +1096,36 @@ fun DashboardScreen(
                 currency = currency,
                 language = language,
                 onDismiss = { showDebitDialog = false }
+            )
+        }
+
+        if (showPrivacyDialog) {
+            AlertDialog(
+                onDismissRequest = { showPrivacyDialog = false },
+                confirmButton = {
+                    TextButton(onClick = { showPrivacyDialog = false }) {
+                        Text("Close".translate(language))
+                    }
+                },
+                title = {
+                    Text(
+                        text = "Privacy Policy".translate(language),
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                    )
+                },
+                text = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 450.dp)
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        PrivacyPolicyContent(
+                            language = language,
+                            useThemeColors = true
+                        )
+                    }
+                }
             )
         }
     }
